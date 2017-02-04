@@ -1,0 +1,14 @@
+SELECT 	z.IDZamowienia,
+		k.Nazwa, 
+        z.DataZamowienia, 
+        z.DataRealizacji,
+        CASE
+   			 WHEN z.DataRealizacji IS NULL THEN false
+             ELSE true
+        END as CzyZrealizowane,
+        z.CzyOplacone,
+        w.SposobWysylki        
+FROM
+zamowienia z 
+INNER JOIN klienci k ON k.IDKlienta=z.IDKlienta
+INNER JOIN wysylka w ON z.IDWysylki=w.IDWysylki
