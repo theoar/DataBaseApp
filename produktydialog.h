@@ -3,9 +3,9 @@
 
 #include <QWidget>
 #include <QMap>
+#include <QPushButton>
 
 #include "basedialog.h"
-#include <QPushButton>
 
 namespace Ui {
 	class ProduktyDialog;
@@ -26,10 +26,10 @@ class ProduktyDialog : public BaseDialog
 		void onNewList(QList<QPair<QString, int> > Lista);
 		virtual void accept(void);
 		void onTextChanged(void);
+
 		virtual void open();
 
 	signals:
-
 		void categoriesRequest(void);
 };
 

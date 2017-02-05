@@ -60,17 +60,31 @@ MainWindow::~MainWindow()
 
 BaseDialog* MainWindow::getDialogByTable(const QString& Table)
 {
-	if (Table == "klienci") return new KlientDialog();
+    if (Table == "klienci")
+        return new KlientDialog();
 
 	if (Table == "produkty")
 	{
 		auto Dialog = new ProduktyDialog();
-
 		connect(Dialog, &ProduktyDialog::categoriesRequest, this, &MainWindow::onCategoriesRequest);
 		connect(this, &MainWindow::categoriesReady, Dialog, &ProduktyDialog::onNewList);
 
 		return Dialog;
 	}
+
+    if( Table == "zamowienia" )
+    {
+        auto Dialog = new ZamowieniaDialog();
+        connect(Dialog, &ZamowieniaDialog::shippingOptionRequest, this, &MainWindow::onShippingOptionsRequest);
+        connect(Dialog, &ZamowieniaDialog::clientsNameRequest, this, &MainWindow::onClientsNamesRequest);
+        connect(Dialog, &ZamowieniaDialog::productsRequest, this, &MainWindow::onProductsRequest);
+
+        connect(this, &MainWindow::shippingOpitonsReady, Dialog, &ZamowieniaDialog::onNewShippingOptions);
+        connect(this, &MainWindow::clientsNamesReady, Dialog, &ZamowieniaDialog::onNewClientsNames);
+        connect(this, &MainWindow::productsReady, Dialog, &ZamowieniaDialog::onNewProducts);
+
+        return Dialog;
+    }
 
 	return nullptr;
 }
@@ -86,7 +100,52 @@ void MainWindow::onCategoriesRequest()
 	    while(Query.next())
 		   List.append(qMakePair(Query.value(1).toString(), Query.value(0).toInt()));
 
-	emit categoriesReady(List);
+    emit categoriesReady(List);
+}
+
+void MainWindow::onShippingOptionsRequest()
+{
+    QList<QPair<QString, int>> List;
+    QSqlQuery Query(DataBase);
+
+    Query.prepare("SELECT IDWysylki, SposobWysylki FROM wysylka ORDER BY SposobWysylki");
+
+    if( Query.exec() )
+        while( Query.next() )
+           List.append(qMakePair(Query.value(1).toString(), Query.value(0).toInt()));
+
+    emit shippingOpitonsReady(List);
+}
+
+void MainWindow::onClientsNamesRequest()
+{
+    QList<QPair<QString, int>> List;
+    QSqlQuery Query(DataBase);
+
+    Query.prepare("SELECT IDKlienta, Nazwa FROM klienci ORDER BY Nazwa");
+
+    if( Query.exec() )
+        while( Query.next() )
+           List.append(qMakePair(Query.value(1).toString(), Query.value(0).toInt()));
+
+    emit clientsNamesReady(List);
+
+}
+
+void MainWindow::onProductsRequest()
+{
+    QList<Products> List;
+
+    QSqlQuery Query(DataBase);
+
+    Query.prepare("SELECT * FROM produkty ORDER BY IDKategorii, NazwaProduktu");
+
+    if( Query.exec() )
+        while( Query.next() )
+           List.append(Products(Query.value(0).toInt(),Query.value(1).toInt(),Query.value(2).toString(),Query.value(3).toDouble(),Query.value(4).toInt(),Query.value(5).toDouble()));
+
+    emit productsReady(List);
+
 }
 
 void MainWindow::onDataRequest()

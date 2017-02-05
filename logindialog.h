@@ -25,6 +25,7 @@ signals:
 public slots:
     virtual void accept();
     virtual void onTextChanged();
+    virtual void open();
 };
 
 #endif // LOGINDIALOG_H

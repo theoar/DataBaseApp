@@ -21,6 +21,8 @@
 #include "klientdialog.h"
 #include "tabwidget.h"
 #include "produktydialog.h"
+#include "zamowieniadialog.h"
+#include "products.h"
 
 namespace Ui {
 	class MainWindow;
@@ -66,7 +68,11 @@ class MainWindow : public QMainWindow
 	private slots:
 
 		void onCategoriesRequest(void);
-		void onDataRequest(void);
+        void onShippingOptionsRequest(void);
+        void onClientsNamesRequest(void);
+        void onProductsRequest(void);
+
+        void onDataRequest(void); //TO DO
 
 		void onLoggin(QString Server, QString User, QString Password);
 
@@ -75,6 +81,10 @@ class MainWindow : public QMainWindow
 	signals:
 
 		void categoriesReady(QList<QPair<QString, int>>);
+        void shippingOpitonsReady(QList<QPair<QString, int>>);
+        void clientsNamesReady(QList<QPair<QString, int>>);
+        void productsReady(QList<Products>);
+
 		void dataReady(QList<QPair<QString, int>>,
 					QList<QPair<QString, int>>,
 					QList<QPair<QString, int>>);

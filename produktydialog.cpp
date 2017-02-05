@@ -47,6 +47,7 @@ void ProduktyDialog::onTextChanged(void)
 
 void ProduktyDialog::open()
 {
-	emit categoriesRequest(); BaseDialog::open();
+    emit categoriesRequest();
+    BaseDialog::open();
 }
 

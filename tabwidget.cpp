@@ -6,10 +6,15 @@ TabWidget::TabWidget(BaseDialog *Dial, QSqlQueryModel * M, QWidget *parent) :
 	ui(new Ui::TabWidget),
 	Dialog(Dial),
 	Model(M)
-{
+{    
 	ui->setupUi(this);
 
+    auto Ss = ui->View->selectionModel();
+    auto Mm = ui->View->model();
 	ui->View->setModel(Model);
+
+    Ss->deleteLater();
+    Mm->deleteLater();
 
 	if (Dialog) Dialog->setParent(this, Qt::Dialog);
 

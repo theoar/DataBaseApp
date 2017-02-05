@@ -19,7 +19,15 @@ void LoginDialog::onTextChanged()
 	ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(
 				!ui->LoginText->text().isEmpty() &&
 				!ui->PasswordText->text().isEmpty() &&
-				!ui->ServerText->text().isEmpty());
+                !ui->ServerText->text().isEmpty());
+}
+
+void LoginDialog::open()
+{
+    if(!ui->LoginText->text().isEmpty() && !ui->ServerText->text().isEmpty())
+        ui->PasswordText->setFocus();
+
+    QDialog::open();
 }
 
 void LoginDialog::accept()
