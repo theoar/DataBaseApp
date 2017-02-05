@@ -8,44 +8,50 @@
 #include <QSqlField>
 #include <QSqlQueryModel>
 #include <QItemDelegate>
+#include <QDebug>
+#include <QTableView>
 
 #include "basedialog.h"
 
 namespace Ui
 {
-	class TabWidget;
+class TabWidget;
 }
 
 class TabWidget : public QWidget
 {
 
-		Q_OBJECT
+    Q_OBJECT
 
-	public:
+public:
 
-		explicit TabWidget(BaseDialog *Dial, QSqlQueryModel * M , QWidget *parent = 0);
-		~TabWidget();
+    explicit TabWidget(BaseDialog *Dial, QSqlQueryModel * M , QWidget *parent = 0);
+    ~TabWidget();
 
-		void setReadonly(bool Readonly);
-		void setDeleteable(bool Deleteable);
-		void setDelegate(QItemDelegate* Delegate);
+    void setReadonly(bool Readonly);
+    void setDeleteable(bool Deleteable);
+    void setDelegate(QItemDelegate* Delegate);
 
-		void insertWidget(QWidget* W, int Pos = 0);
+    void insertWidget(QWidget* W, int Pos = 0);
 
-		void hideColumns(QList<int> Hidden);
+    void hideColumns(QList<int> Hidden);
 
-	private:
+    QSqlQueryModel *getModel() const;
+    void setModel(QSqlQueryModel *value);
+    QTableView *getView();
 
-		Ui::TabWidget *ui;
-		BaseDialog *Dialog;
-		QSqlQueryModel *Model;
+private:
 
-	private slots:
+    Ui::TabWidget *ui;
+    BaseDialog *Dialog;
+    QSqlQueryModel *Model;
 
-		void onAddButton();
-		void onDeleteButton();
-		void onDialogAccepted(QMap<QString, QVariant> Vect);
-		void onSearchChanged();
+private slots:
+
+    void onAddButton();
+    void onDeleteButton();
+    void onDialogAccepted(QMap<QString, QVariant> Vect);
+    void onSearchChanged();
 
 };
 

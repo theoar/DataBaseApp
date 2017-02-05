@@ -24,6 +24,8 @@
 #include "zamowieniadialog.h"
 #include "products.h"
 
+#define PRODUKTY 1
+
 namespace Ui {
 	class MainWindow;
 }
@@ -63,14 +65,13 @@ class MainWindow : public QMainWindow
 
 		QSqlTableModel *KlienciModel;
 
-		BaseDialog* getDialogByTable(const QString& Table);
+        BaseDialog* getDialogByTable(const QString& Table, QAbstractTableModel *Model = nullptr);
 
 	private slots:
 
 		void onCategoriesRequest(void);
         void onShippingOptionsRequest(void);
-        void onClientsNamesRequest(void);
-        void onProductsRequest(void);
+        void onClientsNamesRequest(void);        
 
         void onDataRequest(void); //TO DO
 
@@ -82,8 +83,7 @@ class MainWindow : public QMainWindow
 
 		void categoriesReady(QList<QPair<QString, int>>);
         void shippingOpitonsReady(QList<QPair<QString, int>>);
-        void clientsNamesReady(QList<QPair<QString, int>>);
-        void productsReady(QList<Products>);
+        void clientsNamesReady(QList<QPair<QString, int>>);        
 
 		void dataReady(QList<QPair<QString, int>>,
 					QList<QPair<QString, int>>,

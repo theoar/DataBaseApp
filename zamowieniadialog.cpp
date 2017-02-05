@@ -1,12 +1,13 @@
 #include "zamowieniadialog.h"
 #include "ui_zamowieniadialog.h"
 
-ZamowieniaDialog::ZamowieniaDialog(QWidget *parent) :
+ZamowieniaDialog::ZamowieniaDialog(QSqlRelationalTableModel *Mod, QWidget *parent) :
     BaseDialog(parent),
-    ui(new Ui::ZamowieniaDialog),
-    Dialog(new PozycjaDialog(this))
+    ui(new Ui::ZamowieniaDialog)
 {
-    ui->setupUi(this);   
+    Dialog = new PozycjaDialog(Mod, this);
+    ui->setupUi(this);
+
 }
 
 ZamowieniaDialog::~ZamowieniaDialog()
@@ -28,15 +29,9 @@ void ZamowieniaDialog::onNewClientsNames(QList<QPair<QString, int> > List)
         ui->ClientBox->insertItem(-1, Element.first, Element.second);
 }
 
-void ZamowieniaDialog::onNewProducts(QList<Products> List)
-{
-    Dialog->setProducts(List);
-}
-
 void ZamowieniaDialog::onAddPozycja()
 {
-    Dialog->open();
-    emit productsRequest();
+    Dialog->open();   
 }
 
 void ZamowieniaDialog::open()

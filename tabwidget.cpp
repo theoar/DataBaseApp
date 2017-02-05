@@ -4,9 +4,12 @@
 TabWidget::TabWidget(BaseDialog *Dial, QSqlQueryModel * M, QWidget *parent) :
 	QWidget(parent),
 	ui(new Ui::TabWidget),
-	Dialog(Dial),
-	Model(M)
+    Dialog(Dial)
 {    
+    Model = M;
+    qDebug() << Model;
+    auto X = Model->record(0);
+    qDebug() << X;
 	ui->setupUi(this);
 
     auto Ss = ui->View->selectionModel();
@@ -16,14 +19,25 @@ TabWidget::TabWidget(BaseDialog *Dial, QSqlQueryModel * M, QWidget *parent) :
     Ss->deleteLater();
     Mm->deleteLater();
 
-	if (Dialog) Dialog->setParent(this, Qt::Dialog);
+    if (Dialog)
+    {
+        Dialog->setParent(this, Qt::Dialog);
+        connect(ui->AddButton, &QToolButton::clicked, this, &TabWidget::onAddButton);
+        connect(ui->DeleteButton, &QToolButton::clicked, this, &TabWidget::onDeleteButton);
+    }
+    else
+    {
+        ui->AddButton->hide();
+        ui->DeleteButton->hide();
+    }
 
 	ui->FilterBox->addItem(tr("All fields"), -1);
 
 	for(int i = 0; i < Model->columnCount(); ++i)
 		ui->FilterBox->addItem(Model->headerData(i, Qt::Horizontal).toString(), i);
 
-	if (Dialog) connect(Dialog, &BaseDialog::accepted, this, &TabWidget::onDialogAccepted);
+    if (Dialog)
+        connect(Dialog, &BaseDialog::accepted, this, &TabWidget::onDialogAccepted);
 
 	connect(Model, &QSqlQueryModel::dataChanged, this, &TabWidget::onSearchChanged);
 	connect(Model, &QSqlQueryModel::layoutChanged, this, &TabWidget::onSearchChanged);
@@ -68,15 +82,30 @@ void TabWidget::hideColumns(QList<int> Hidden)
 		else ui->FilterBox->addItem(Model->headerData(i, Qt::Horizontal).toString(), i);
 	}
 }
+QSqlQueryModel *TabWidget::getModel() const
+{
+    return Model;
+}
+
+void TabWidget::setModel(QSqlQueryModel *value)
+{
+    Model = value;
+}
+
+QTableView *TabWidget::getView()
+{
+    return ui->View;
+}
+
 
 void TabWidget::onAddButton()
 {
-	if (Dialog) Dialog->open();
+    if (Dialog) Dialog->open();
 }
 
 void TabWidget::onDeleteButton()
 {
-	auto Index  = ui->View->selectionModel()->currentIndex();
+    auto Index  = ui->View->selectionModel()->currentIndex();
 	if(Index.isValid())
 	{
 		QMessageBox::StandardButton Reply = QMessageBox::question(this, tr("Delete record"), tr("Do you want to delete selected row"), QMessageBox::Yes|QMessageBox::No);

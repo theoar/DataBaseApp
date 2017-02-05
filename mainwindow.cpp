@@ -58,7 +58,7 @@ MainWindow::~MainWindow()
 	delete ui;
 }
 
-BaseDialog* MainWindow::getDialogByTable(const QString& Table)
+BaseDialog* MainWindow::getDialogByTable(const QString& Table, QAbstractTableModel *Model)
 {
     if (Table == "klienci")
         return new KlientDialog();
@@ -74,14 +74,12 @@ BaseDialog* MainWindow::getDialogByTable(const QString& Table)
 
     if( Table == "zamowienia" )
     {
-        auto Dialog = new ZamowieniaDialog();
+        auto Dialog = new ZamowieniaDialog(dynamic_cast<QSqlRelationalTableModel*>(Model));
         connect(Dialog, &ZamowieniaDialog::shippingOptionRequest, this, &MainWindow::onShippingOptionsRequest);
         connect(Dialog, &ZamowieniaDialog::clientsNameRequest, this, &MainWindow::onClientsNamesRequest);
-        connect(Dialog, &ZamowieniaDialog::productsRequest, this, &MainWindow::onProductsRequest);
 
         connect(this, &MainWindow::shippingOpitonsReady, Dialog, &ZamowieniaDialog::onNewShippingOptions);
         connect(this, &MainWindow::clientsNamesReady, Dialog, &ZamowieniaDialog::onNewClientsNames);
-        connect(this, &MainWindow::productsReady, Dialog, &ZamowieniaDialog::onNewProducts);
 
         return Dialog;
     }
@@ -129,24 +127,8 @@ void MainWindow::onClientsNamesRequest()
            List.append(qMakePair(Query.value(1).toString(), Query.value(0).toInt()));
 
     emit clientsNamesReady(List);
-
 }
 
-void MainWindow::onProductsRequest()
-{
-    QList<Products> List;
-
-    QSqlQuery Query(DataBase);
-
-    Query.prepare("SELECT * FROM produkty ORDER BY IDKategorii, NazwaProduktu");
-
-    if( Query.exec() )
-        while( Query.next() )
-           List.append(Products(Query.value(0).toInt(),Query.value(1).toInt(),Query.value(2).toString(),Query.value(3).toDouble(),Query.value(4).toInt(),Query.value(5).toDouble()));
-
-    emit productsReady(List);
-
-}
 
 void MainWindow::onDataRequest()
 {
@@ -158,11 +140,17 @@ void MainWindow::onLoggin(QString Server, QString User, QString Password)
 	DataBase.setDatabaseName("hurtownia");
 	DataBase.setUserName(User);
 	DataBase.setPassword(Password);
-	DataBase.setHostName(Server);
+    DataBase.setHostName(Server);
 
-	if (DataBase.open()) ui->LoginAction->setEnabled(false);
-	else QMessageBox::critical(this, tr("Error"), DataBase.lastError().text());
+    if (DataBase.open())
+        ui->LoginAction->setEnabled(false);
+    else
+    {
+        QMessageBox::critical(this, tr("Error"), DataBase.lastError().text());
+        return;
+    }
 
+    QSqlRelationalTableModel *DoubleModel;
 	// tabele relacyjne
 	for (const auto& Table : Relationals)
 	{
@@ -182,7 +170,7 @@ void MainWindow::onLoggin(QString Server, QString User, QString Password)
 			M->setHeaderData(i, Qt::Horizontal, Table.Headers[i]);
 		}
 
-		TabWidget* W = new TabWidget(getDialogByTable(Table.Table), M, this);
+        TabWidget* W = new TabWidget(getDialogByTable(Table.Table, M), M, this);
 
 		W->setDelegate(new QSqlRelationalDelegate(W));
 		W->setReadonly(Table.Readonly);
@@ -190,38 +178,41 @@ void MainWindow::onLoggin(QString Server, QString User, QString Password)
 		W->hideColumns(Table.Hidden);
 
 		ui->MainTab->addTab(W, Table.Name);
+
+        if(Table.Table=="produkty")
+            DoubleModel = M;
 	}
 
 	// tabele specjalne
-	{
-		static const QStringList Headers =
-		{
-			// TODO headers
-		};
+    {
+        static const QStringList Headers =
+        {
+            // TODO headers
+        };
 
-		QSqlQueryModel* M = new QSqlQueryModel(this);
+        QSqlQueryModel* M = new QSqlQueryModel(this);        
 
-		M->setQuery("", DataBase);
+        M->setQuery("", DataBase);
 
-		for (int i = 0; i < M->columnCount() && i < Headers.size(); ++i)
-		{
-			M->setHeaderData(i, Qt::Horizontal, Headers[i]);
-		}
+        for (int i = 0; i < M->columnCount() && i < Headers.size(); ++i)
+        {
+            M->setHeaderData(i, Qt::Horizontal, Headers[i]);
+        }
 
-		TabWidget* W = new TabWidget(getDialogByTable("zamowienia"), M, this);
-		QPushButton* Complete = new QPushButton(tr("Complete order"), W);
-		QPushButton* Pay = new QPushButton(tr("Pay"), W);
+        TabWidget* W = new TabWidget(getDialogByTable("zamowienia", DoubleModel), M, this);
+        QPushButton* Complete = new QPushButton(tr("Complete order"), W);
+        QPushButton* Pay = new QPushButton(tr("Pay"), W);
 
-		// TODO connect pay and complete
+        // TODO connect pay and complete
 
-		W->setReadonly(true);
-		W->setDeleteable(false);
+        W->setReadonly(true);
+        W->setDeleteable(false);
 
-		W->insertWidget(Complete);
-		W->insertWidget(Pay);
+        W->insertWidget(Complete);
+        W->insertWidget(Pay);
 
-		ui->MainTab->addTab(W, tr("Orders"));
-	}
+        ui->MainTab->addTab(W, tr("Orders"));
+    }
 
 	ui->StatusLable->hide();
 	ui->MainTab->show();

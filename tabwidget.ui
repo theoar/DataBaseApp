@@ -85,38 +85,6 @@
  </resources>
  <connections>
   <connection>
-   <sender>DeleteButton</sender>
-   <signal>clicked()</signal>
-   <receiver>TabWidget</receiver>
-   <slot>onDeleteButton()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>607</x>
-     <y>368</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>580</x>
-     <y>382</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>AddButton</sender>
-   <signal>clicked()</signal>
-   <receiver>TabWidget</receiver>
-   <slot>onAddButton()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>655</x>
-     <y>365</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>643</x>
-     <y>382</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
    <sender>SearchField</sender>
    <signal>textChanged(QString)</signal>
    <receiver>TabWidget</receiver>

@@ -4,8 +4,11 @@
 #include <QDialog>
 #include <QMessageBox>
 #include <QPushButton>
+#include <QSqlRelationalTableModel>
+#include <QTableView>
 
 #include "products.h"
+#include "tabwidget.h"
 
 
 namespace Ui {
@@ -17,20 +20,21 @@ class PozycjaDialog : public QDialog
     Q_OBJECT
 
 public:
-    explicit PozycjaDialog(QWidget *parent = 0);
+    explicit PozycjaDialog(QSqlRelationalTableModel *Mod, QWidget *parent = 0);
     ~PozycjaDialog();
 
-    void setProducts(QList<Products> L);
+    void setModel(QSqlRelationalTableModel *M);   
+
 
 private:
     Ui::PozycjaDialog *ui;
     QList<Products> List;
+    TabWidget *TableWidget;
 
-signals:
-    void requestProducts(QList<Products> L);
+signals:    
 
 public slots:    
-    void onIndexChange(int Index);
+    void onIndexChange(const QItemSelection &newSelection, const QItemSelection &oldSelection);
     void onCountChanged(int Value);
 };
 

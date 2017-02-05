@@ -6,23 +6,46 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>400</width>
-    <height>280</height>
+    <width>805</width>
+    <height>432</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Dialog</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
-   <item row="0" column="0">
-    <widget class="QLabel" name="ProductLabel">
-     <property name="text">
-      <string>Product:</string>
+   <item row="0" column="0" colspan="2">
+    <layout class="QVBoxLayout" name="verticalLayout"/>
+   </item>
+   <item row="3" column="0" colspan="2">
+    <widget class="QDialogButtonBox" name="buttonBox">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <property name="standardButtons">
+      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
      </property>
     </widget>
    </item>
-   <item row="0" column="1">
-    <widget class="QComboBox" name="ProductComboBox"/>
+   <item row="2" column="1">
+    <widget class="QLineEdit" name="TotalCostEdit">
+     <property name="enabled">
+      <bool>true</bool>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
+     </property>
+     <property name="readOnly">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="0">
+    <widget class="QLabel" name="TotalCostLabel">
+     <property name="text">
+      <string>Total cost:</string>
+     </property>
+    </widget>
    </item>
    <item row="1" column="0">
     <widget class="QLabel" name="CountLabel">
@@ -37,34 +60,13 @@
       <enum>QAbstractSpinBox::UpDownArrows</enum>
      </property>
      <property name="minimum">
-      <number>0</number>
+      <number>1</number>
      </property>
-    </widget>
-   </item>
-   <item row="2" column="0">
-    <widget class="QLabel" name="TotalCostLabel">
-     <property name="text">
-      <string>Total cost:</string>
+     <property name="maximum">
+      <number>10000</number>
      </property>
-    </widget>
-   </item>
-   <item row="2" column="1">
-    <widget class="QLineEdit" name="TotalCostEdit">
-     <property name="enabled">
-      <bool>true</bool>
-     </property>
-     <property name="readOnly">
-      <bool>true</bool>
-     </property>
-    </widget>
-   </item>
-   <item row="3" column="0" colspan="2">
-    <widget class="QDialogButtonBox" name="buttonBox">
-     <property name="orientation">
-      <enum>Qt::Horizontal</enum>
-     </property>
-     <property name="standardButtons">
-      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+     <property name="value">
+      <number>10</number>
      </property>
     </widget>
    </item>
@@ -79,8 +81,8 @@
    <slot>accept()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>257</x>
-     <y>240</y>
+     <x>266</x>
+     <y>422</y>
     </hint>
     <hint type="destinationlabel">
      <x>157</x>
@@ -95,28 +97,12 @@
    <slot>reject()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>325</x>
-     <y>240</y>
+     <x>334</x>
+     <y>422</y>
     </hint>
     <hint type="destinationlabel">
      <x>286</x>
      <y>274</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>ProductComboBox</sender>
-   <signal>activated(int)</signal>
-   <receiver>PozycjaDialog</receiver>
-   <slot>onIndexChange(int)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>109</x>
-     <y>53</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>91</x>
-     <y>27</y>
     </hint>
    </hints>
   </connection>
@@ -127,12 +113,12 @@
    <slot>onCountChanged(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>252</x>
-     <y>110</y>
+     <x>426</x>
+     <y>346</y>
     </hint>
     <hint type="destinationlabel">
-     <x>236</x>
-     <y>83</y>
+     <x>479</x>
+     <y>232</y>
     </hint>
    </hints>
   </connection>

@@ -1,11 +1,20 @@
 #include "pozycjadialog.h"
 #include "ui_pozycjadialog.h"
 
-PozycjaDialog::PozycjaDialog(QWidget *parent) :
+PozycjaDialog::PozycjaDialog(QSqlRelationalTableModel *Mod, QWidget *parent) :
     QDialog(parent),
     ui(new Ui::PozycjaDialog)
-{
+{    
+    TableWidget = new TabWidget(nullptr, Mod, this);
+    TableWidget->setReadonly(true);
+    TableWidget->getView()->setSelectionBehavior(QAbstractItemView::SelectionBehavior::SelectRows);
+
     ui->setupUi(this);
+    ui->verticalLayout->addWidget(TableWidget);
+
+    connect(TableWidget->getView()->selectionModel(), &QItemSelectionModel::selectionChanged, this, &PozycjaDialog::onIndexChange);
+    ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(false);
+
 }
 
 PozycjaDialog::~PozycjaDialog()
@@ -13,45 +22,29 @@ PozycjaDialog::~PozycjaDialog()
     delete ui;
 }
 
-void PozycjaDialog::onIndexChange(int Index)
+
+void PozycjaDialog::onIndexChange(const QItemSelection & newSelection, const QItemSelection & oldSelection)
 {
-    auto &P = List.at(Index);
+    if(!newSelection.isEmpty())
+    {
+        double Cena = TableWidget->getModel()->index(newSelection.indexes().first().row(), 3).data().toDouble();
+        int Ilosc = ui->CountBox->value();
+        ui->TotalCostEdit->setText( QString::number(Cena*Ilosc) );
+    }
+    else
+        ui->TotalCostEdit->setText( tr("Didn't select item") );
 
-    if(List.at(Index).getStan() < 0)    
-        QMessageBox::information(this, tr("Error"), tr("Out of this product: ") + P.getNazwa(), QMessageBox::Ok);
 
-    ui->CountBox->setMaximum(P.getStan());
-    ui->CountBox->setValue(0);
-    ui->CountBox->valueChanged(0);
+    ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(!newSelection.isEmpty());
 }
 
 void PozycjaDialog::onCountChanged(int Value)
-{
-    ui->TotalCostEdit->setText( QString::number(List.at(ui->ProductComboBox->currentIndex()).getCena()*Value) );
-    ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(Value);
-}
-
-void PozycjaDialog::setProducts(QList<Products> L)
-{
-    List = L;
-
-    ui->ProductComboBox->clear();
-    ui->CountBox->clear();
-    ui->TotalCostEdit->clear();
-
-    if(!List.isEmpty())
+{    
+    auto Index = TableWidget->getView()->currentIndex();
+    if(!TableWidget->getView()->selectionModel()->selection().isEmpty())
     {
-        for(auto Element : List)
-        {
-            QString Str = QString("%1, %2 l, %3 zł").arg(Element.getNazwa(), QString::number(Element.getPojemnosc()), QString::number(Element.getCena()));
-            ui->ProductComboBox->insertItem(-1, Str);
-        }
-
-        if(List[0].getStan() < 0)
-            QMessageBox::information(this, tr("Error"), tr("Out of this product: ") + List[0].getNazwa(), QMessageBox::Ok);
-
-        ui->CountBox->setMaximum(List[0].getStan());
-        ui->CountBox->setValue(0);
+        double Cena = TableWidget->getModel()->index(Index.row(), 3).data().toDouble();
+        ui->TotalCostEdit->setText( QString::number(Cena*Value) );
+        ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(Value);
     }
-
 }

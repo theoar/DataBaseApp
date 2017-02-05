@@ -3,6 +3,8 @@
 
 #include <QDialog>
 #include <QDebug>
+#include <QSqlRelationalTableModel>
+#include <QDebug>
 
 #include "basedialog.h"
 #include "products.h"
@@ -17,7 +19,7 @@ class ZamowieniaDialog : public BaseDialog
     Q_OBJECT
 
 public:
-    explicit ZamowieniaDialog(QWidget *parent = 0);
+    explicit ZamowieniaDialog(QSqlRelationalTableModel *Mod, QWidget *parent = 0);
     ~ZamowieniaDialog();
 
 private:
@@ -26,8 +28,7 @@ private:
 
 public slots:
     void onNewShippingOptions(QList<QPair<QString, int>> List);
-    void onNewClientsNames(QList<QPair<QString, int>> List);
-    void onNewProducts(QList<Products> List);
+    void onNewClientsNames(QList<QPair<QString, int>> List);    
 
     void onAddPozycja();
 
@@ -36,8 +37,6 @@ public slots:
 signals:
     void shippingOptionRequest();
     void clientsNameRequest();
-    void productsRequest();
-
 };
 
 #endif // ZAMOWIENIADIALOG_H
