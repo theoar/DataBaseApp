@@ -17,10 +17,6 @@ ZamowieniaDialog::ZamowieniaDialog(QSqlRelationalTableModel *Mod, QWidget *paren
 
     connect(Dialog, &PozycjaDialog::accepted, this, &ZamowieniaDialog::onPozycjaAdded);
     connect(ui->View->selectionModel(), &QItemSelectionModel::selectionChanged, this, &ZamowieniaDialog::onIndexChanged);
-
-    ui->OrderDate->setText(QString("%1 %2").arg(StaticDataLabel, QDate::currentDate().toString("dd-MM-yyyy")));
-
-    ui->ButtonBox->button(QDialogButtonBox::Ok)->setEnabled(false);
 }
 
 ZamowieniaDialog::~ZamowieniaDialog()
@@ -75,6 +71,7 @@ void ZamowieniaDialog::onNewDiscount(int Rabat)
 
 void ZamowieniaDialog::onAddPozycja()
 {
+
     Dialog->open();
 }
 
@@ -119,7 +116,44 @@ void ZamowieniaDialog::onIndexChanged(const QItemSelection &newSelection, const 
 void ZamowieniaDialog::open()
 {
     emit shippingOptionRequest();
-    emit clientsNameRequest();    
+    emit clientsNameRequest();
+
+    TotalKoszt = 0;
+    TotalRabat = 0;
+
+    ui->OrderDate->setText(QString("%1 %2").arg(StaticDataLabel, QDate::currentDate().toString("dd-MM-yyyy")));
+    ui->DiscountLabel->setText( QString("%1 %2 %").arg(StaticDiscountLabel, QString::number(TotalRabat)) );
+    ui->DiscountCostLabel->setText( QString("%1 %2 zl").arg(StaticDiscountCostLabe, QString::number(TotalKoszt*(1-TotalRabat/100.f) )));
+    ui->TotalCostLabel->setText(QString("%1 %2 zl").arg(StaticTotalCostLabel, QString::number(TotalKoszt)));
+
+    ui->ButtonBox->button(QDialogButtonBox::Ok)->setEnabled(false);
 
     BaseDialog::open();
+}
+
+void ZamowieniaDialog::accept()
+{
+    QList<QVariant> Zamowienie;
+    QList<QList<QVariant>> Pozycje;
+
+    auto Model = ui->View->model();
+
+    Zamowienie.push_back(ui->ClientBox->currentData());
+    Zamowienie.push_back(ui->ShippingBox->currentData());
+    Zamowienie.push_back(QVariant(TotalRabat));
+
+    for(int x = 0; x<Model->rowCount(); ++x)
+    {
+        Pozycje.push_back(QList<QVariant>());
+        Pozycje.last().push_back(Model->index(x, PozycjaColumns::IDProduktu).data());
+        Pozycje.last().push_back(Model->index(x, PozycjaColumns::Ilosc).data());
+        Pozycje.last().push_back(Model->index(x, PozycjaColumns::Koszt).data());
+    }
+
+    emit accepted(Zamowienie, Pozycje);
+
+    if(ui->View->model()->rowCount())
+        ui->View->model()->removeRows(0, ui->View->model()->rowCount());
+
+    QDialog::accept();
 }

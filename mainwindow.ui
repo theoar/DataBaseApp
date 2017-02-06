@@ -13,7 +13,7 @@
   <property name="windowTitle">
    <string>MainWindow</string>
   </property>
-  <widget class="QWidget" name="centralWidget">
+  <widget class="QWidget" name="CentralWidget">
    <layout class="QGridLayout" name="gridLayout">
     <item row="1" column="0">
      <widget class="QLabel" name="StatusLable">
@@ -37,7 +37,7 @@
     </item>
    </layout>
   </widget>
-  <widget class="QMenuBar" name="menuBar">
+  <widget class="QMenuBar" name="MenuBar">
    <property name="geometry">
     <rect>
      <x>0</x>
@@ -47,7 +47,7 @@
     </rect>
    </property>
   </widget>
-  <widget class="QToolBar" name="mainToolBar">
+  <widget class="QToolBar" name="MainToolBar">
    <property name="enabled">
     <bool>true</bool>
    </property>
@@ -58,6 +58,7 @@
     <bool>false</bool>
    </attribute>
    <addaction name="LoginAction"/>
+   <addaction name="CheckCountAction"/>
   </widget>
   <widget class="QStatusBar" name="StatusBar"/>
   <action name="LoginAction">
@@ -66,10 +67,19 @@
      <normaloff>:/new/prefix1/media-eject.png</normaloff>:/new/prefix1/media-eject.png</iconset>
    </property>
    <property name="text">
-    <string>Zaloguj się</string>
+    <string>Log In</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+L</string>
+   </property>
+  </action>
+  <action name="CheckCountAction">
+   <property name="icon">
+    <iconset resource="resources.qrc">
+     <normaloff>:/new/prefix1/list-remove.png</normaloff>:/new/prefix1/list-remove.png</iconset>
+   </property>
+   <property name="text">
+    <string>Check count</string>
    </property>
   </action>
  </widget>
@@ -94,10 +104,25 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>CheckCountAction</sender>
+   <signal>triggered()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>onActionCheckCount()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>432</x>
+     <y>259</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>onActionLogin()</slot>
-  <slot>onActionDodaj()</slot>
-  <slot>onActionUsun()</slot>
+  <slot>onActionCheckCount()</slot>
  </slots>
 </ui>

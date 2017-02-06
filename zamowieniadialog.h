@@ -58,11 +58,15 @@ public slots:
     void onIndexChanged(const QItemSelection &newSelection, const QItemSelection &oldSelection);
 
     virtual void open();
+    virtual void accept();
 
 signals:
     void shippingOptionRequest();
     void clientsNameRequest();
     void discountRequest(double Kwota);
+
+    void accepted(QList<QVariant> Zamowienie, QList<QList<QVariant>> Pozycje);
+
 };
 
 #endif // ZAMOWIENIADIALOG_H

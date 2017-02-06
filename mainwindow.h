@@ -67,18 +67,34 @@ class MainWindow : public QMainWindow
 
         BaseDialog* getDialogByTable(const QString& Table, QAbstractTableModel *Model = nullptr);
 
+        enum ZamowienieData
+        {
+            IDKlienta = 0,
+            IDWysylki = 1,
+            Rabat = 2
+        };
+
+        enum PozycjeData
+        {
+            IDProduktu = 0,
+            Ilosc = 1,
+            KosztPozycji = 2
+        };
+
 	private slots:
 
 		void onCategoriesRequest(void);
         void onShippingOptionsRequest(void);
         void onClientsNamesRequest(void);        
         void onDiscountRequest(double Kwota);
+        void onNewZamowienie(QList<QVariant> Zamowienie, QList<QList<QVariant>> Pozycje);
 
         void onDataRequest(void); //TO DO
 
 		void onLoggin(QString Server, QString User, QString Password);
 
 		void onActionLogin(void);
+        void onActionCheckCount(void);
 
 	signals:
 
