@@ -6,10 +6,8 @@ TabWidget::TabWidget(BaseDialog *Dial, QSqlQueryModel * M, QWidget *parent) :
 	ui(new Ui::TabWidget),
     Dialog(Dial)
 {    
-    Model = M;
-    qDebug() << Model;
-    auto X = Model->record(0);
-    qDebug() << X;
+    Model = M;   
+    auto X = Model->record(0); 
 	ui->setupUi(this);
 
     auto Ss = ui->View->selectionModel();

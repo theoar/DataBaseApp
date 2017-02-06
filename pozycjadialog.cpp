@@ -8,6 +8,7 @@ PozycjaDialog::PozycjaDialog(QSqlRelationalTableModel *Mod, QWidget *parent) :
     TableWidget = new TabWidget(nullptr, Mod, this);
     TableWidget->setReadonly(true);
     TableWidget->getView()->setSelectionBehavior(QAbstractItemView::SelectionBehavior::SelectRows);
+    TableWidget->getView()->hideColumn(0);
 
     ui->setupUi(this);
     ui->verticalLayout->addWidget(TableWidget);
@@ -47,4 +48,22 @@ void PozycjaDialog::onCountChanged(int Value)
         ui->TotalCostEdit->setText( QString::number(Cena*Value) );
         ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(Value);
     }
+}
+
+void PozycjaDialog::accept()
+{
+    QStringList List;
+
+    auto Index = TableWidget->getView()->currentIndex();
+    auto Model = TableWidget->getModel();
+    if(!TableWidget->getView()->selectionModel()->selection().isEmpty())
+    {
+        List.push_back(Model->index(Index.row(), 0).data().toString());
+        List.push_back(QString("%1, %2 l").arg(Model->index(Index.row(), 2).data().toString()).arg(Model->index(Index.row(), 5).data().toString()));
+        List.push_back(Model->index(Index.row(), 3).data().toString());
+        List.push_back(QString::number(ui->CountBox->value()));
+    }
+
+    emit accepted(List);
+    QDialog::accept();
 }

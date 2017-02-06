@@ -72,6 +72,7 @@ class MainWindow : public QMainWindow
 		void onCategoriesRequest(void);
         void onShippingOptionsRequest(void);
         void onClientsNamesRequest(void);        
+        void onDiscountRequest(double Kwota);
 
         void onDataRequest(void); //TO DO
 
@@ -84,6 +85,7 @@ class MainWindow : public QMainWindow
 		void categoriesReady(QList<QPair<QString, int>>);
         void shippingOpitonsReady(QList<QPair<QString, int>>);
         void clientsNamesReady(QList<QPair<QString, int>>);        
+        void discountReady(int);
 
 		void dataReady(QList<QPair<QString, int>>,
 					QList<QPair<QString, int>>,

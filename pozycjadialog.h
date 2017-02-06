@@ -31,11 +31,13 @@ private:
     QList<Products> List;
     TabWidget *TableWidget;
 
-signals:    
-
+signals:
+    void accepted(QStringList List);
 public slots:    
     void onIndexChange(const QItemSelection &newSelection, const QItemSelection &oldSelection);
     void onCountChanged(int Value);
+
+    virtual void accept();
 };
 
 #endif // POZYCJADIALOG_H

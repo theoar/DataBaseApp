@@ -77,9 +77,11 @@ BaseDialog* MainWindow::getDialogByTable(const QString& Table, QAbstractTableMod
         auto Dialog = new ZamowieniaDialog(dynamic_cast<QSqlRelationalTableModel*>(Model));
         connect(Dialog, &ZamowieniaDialog::shippingOptionRequest, this, &MainWindow::onShippingOptionsRequest);
         connect(Dialog, &ZamowieniaDialog::clientsNameRequest, this, &MainWindow::onClientsNamesRequest);
+        connect(Dialog, &ZamowieniaDialog::discountRequest, this, &MainWindow::onDiscountRequest);
 
         connect(this, &MainWindow::shippingOpitonsReady, Dialog, &ZamowieniaDialog::onNewShippingOptions);
         connect(this, &MainWindow::clientsNamesReady, Dialog, &ZamowieniaDialog::onNewClientsNames);
+        connect(this, &MainWindow::discountReady, Dialog, &ZamowieniaDialog::onNewDiscount);
 
         return Dialog;
     }
@@ -127,6 +129,20 @@ void MainWindow::onClientsNamesRequest()
            List.append(qMakePair(Query.value(1).toString(), Query.value(0).toInt()));
 
     emit clientsNamesReady(List);
+}
+
+void MainWindow::onDiscountRequest(double Kwota)
+{
+    int Rabat = 0;
+    QSqlQuery Query(DataBase);
+
+    Query.prepare("SELECT Rabat FROM rabaty WHERE :Kwota>=MinKwota ORDER BY MinKwota DESC LIMIT 1");
+    Query.bindValue(":Kwota", Kwota);
+    if( Query.exec() )
+        while( Query.next() )
+           Rabat = Query.value(0).toInt();
+
+    emit discountReady(Rabat);
 }
 
 
