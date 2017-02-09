@@ -87,7 +87,7 @@ class MainWindow : public QMainWindow
         void onShippingOptionsRequest(void);
         void onClientsNamesRequest(void);        
         void onDiscountRequest(double Kwota);
-        void onNewZamowienie(QList<QVariant> Zamowienie, QList<QList<QVariant>> Pozycje);
+        void onNewZamowienie(QMap<QString, QVariant> Zamowienie, QMap<QString, QList<QVariant> > Pozycje);
 
         void onDataRequest(void); //TO DO
 
@@ -106,6 +106,8 @@ class MainWindow : public QMainWindow
 		void dataReady(QList<QPair<QString, int>>,
 					QList<QPair<QString, int>>,
 					QList<QPair<QString, int>>);
+
+        void requestRefresh();
 };
 
 #endif // MAINWINDOW_H

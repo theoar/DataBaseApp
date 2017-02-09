@@ -147,33 +147,63 @@ void MainWindow::onDiscountRequest(double Kwota)
     emit discountReady(Rabat);
 }
 
-void MainWindow::onNewZamowienie(QList<QVariant> Zamowienie, QList<QList<QVariant> > Pozycje)
+void MainWindow::onNewZamowienie(QMap<QString, QVariant> Zamowienie, QMap<QString, QList<QVariant>> Pozycje)
 {
-    QSqlQuery ZamowienieQuery(DataBase);
+    QSqlTableModel Model(nullptr, DataBase);
+    Model.setTable("zamowienia");
 
-    ZamowienieQuery.prepare("INSERT INTO zamowienia(IDKlienta, DataZamowienia, IDWysylki, Rabat) VALUES(:klient, now(), :wysylka, :rabat)");
-    ZamowienieQuery.bindValue(":klient", Zamowienie.at(ZamowienieData::IDKlienta));
-    ZamowienieQuery.bindValue(":wysylka", Zamowienie.at(ZamowienieData::IDWysylki));
-    ZamowienieQuery.bindValue(":rabat", Zamowienie.at(ZamowienieData::Rabat));
-
-    if( ZamowienieQuery.exec() )
+    QSqlRecord Record;
+    for(auto i = Zamowienie.constBegin(); i != Zamowienie.constEnd(); ++i)
     {
-        QVariant NewId = ZamowienieQuery.lastInsertId();
-
-        QSqlQuery PozycjaQuery(DataBase);
-        PozycjaQuery.prepare("INSERT INTO pozycja(IDZamowienia, IDProduktu, Ilosc, KosztPozycji) VALUES(:zamowienie, :produkt, :ilosc, :koszt)");
-        PozycjaQuery.bindValue(":zamowienie", NewId );
-        for(auto & Element : Pozycje)
-        {
-            PozycjaQuery.bindValue(":produkt", Element.at(PozycjeData::IDProduktu));
-            PozycjaQuery.bindValue(":ilosc", Element.at(PozycjeData::Ilosc));
-            PozycjaQuery.bindValue(":koszt", Element.at(PozycjeData::KosztPozycji));
-
-            qDebug() << PozycjaQuery.lastQuery();
-            if( !PozycjaQuery.exec() )
-                qDebug() << PozycjaQuery.lastError();
-        }
+        Record.append(QSqlField(i.key(), i.value().type()));
+        Record.setValue(i.key(), i.value());
     }
+    Model.insertRecord(-1, Record);
+
+    QVariant ID = Model.record(Model.rowCount()-1).value("IDZamowienia");
+
+    Model.setTable("pozycja");
+    Record = Model.record();
+    Record.setValue("IDZamowienia", ID);
+
+    qDebug() << Model.record(Model.rowCount()-1).value("IDZamowienia");
+
+    for(int x = 0; x<Pozycje.begin().value().length(); ++x)
+    {
+        for(auto i = Pozycje.constBegin(); i != Pozycje.constEnd(); ++i)
+            Record.setValue(i.key(), i.value().at(x));
+        Model.insertRecord(-1, Record);
+
+        qDebug() << Record;
+    }
+
+//    QSqlQuery ZamowienieQuery(DataBase);
+
+//    ZamowienieQuery.prepare("INSERT INTO zamowienia(IDKlienta, DataZamowienia, IDWysylki, Rabat) VALUES(:klient, now(), :wysylka, :rabat)");
+//    ZamowienieQuery.bindValue(":klient", Zamowienie.at(ZamowienieData::IDKlienta));
+//    ZamowienieQuery.bindValue(":wysylka", Zamowienie.at(ZamowienieData::IDWysylki));
+//    ZamowienieQuery.bindValue(":rabat", Zamowienie.at(ZamowienieData::Rabat));
+
+//    if( ZamowienieQuery.exec() )
+//    {
+//        QVariant NewId = ZamowienieQuery.lastInsertId();
+
+//        QSqlQuery PozycjaQuery(DataBase);
+//        PozycjaQuery.prepare("INSERT INTO pozycja(IDZamowienia, IDProduktu, Ilosc, KosztPozycji) VALUES(:zamowienie, :produkt, :ilosc, :koszt)");
+//        PozycjaQuery.bindValue(":zamowienie", NewId );
+//        for(auto & Element : Pozycje)
+//        {
+//            PozycjaQuery.bindValue(":produkt", Element.at(PozycjeData::IDProduktu));
+//            PozycjaQuery.bindValue(":ilosc", Element.at(PozycjeData::Ilosc));
+//            PozycjaQuery.bindValue(":koszt", Element.at(PozycjeData::KosztPozycji));
+
+//            qDebug() << PozycjaQuery.lastQuery();
+//            if( !PozycjaQuery.exec() )
+//                qDebug() << PozycjaQuery.lastError();
+//        }
+//    }
+
+    emit requestRefresh();
 }
 
 
@@ -239,14 +269,18 @@ void MainWindow::onLoggin(QString Server, QString User, QString Password)
 
         QSqlQueryModel* M = new QSqlQueryModel(this);
 
-        M->setQuery("SELECT Z.IDZamowienia, K.Nazwa, Z.DataZamowienia, Z.DataRealizacji,Z.CzyOplacone, Z.Rabat, W.SposobWysylki, Pr.NazwaProduktu, Pr.Pojemnosc, P.Ilosc, P.KosztPozycji"
+        M->setQuery(" SELECT Z.IDZamowienia AS Identyfikator, K.Nazwa AS Klient,"
+                    " Z.DataZamowienia AS 'Data zamówienia', Z.DataRealizacji AS 'Data realizacji',"
+                    " Z.CzyOplacone AS Opłacone, Z.Rabat AS Rabat, W.SposobWysylki AS 'Sposób wysyłki',"
+                    " Pr.NazwaProduktu AS 'Nazwa produktu', Pr.Pojemnosc AS 'Pojemność',"
+                    " P.Ilosc, P.KosztPozycji AS 'Cena jednostkowa'"
                     " FROM zamowienia Z"
-                    " INNER JOIN klienci K ON K.IDKlienta=Z.IDKlienta"
-                    " INNER JOIN wysylka W ON Z.IDWysylki=W.IDWysylki"
-                    " INNER JOIN pozycja P ON P.IDZamowienia=Z.IDZamowienia"
-                    " INNER JOIN produkty Pr ON Pr.IDProduktu=P.IDProduktu", DataBase);
+                    " LEFT JOIN klienci K ON K.IDKlienta=Z.IDKlienta"
+                    " LEFT JOIN wysylka W ON Z.IDWysylki=W.IDWysylki"
+                    " LEFT JOIN pozycja P ON P.IDZamowienia=Z.IDZamowienia"
+                    " LEFT JOIN produkty Pr ON Pr.IDProduktu=P.IDProduktu", DataBase);
 
-        qDebug() << M->rowCount();
+        qDebug() << M->rowCount();        
 
         for (int i = 0; i < M->columnCount() && i < Headers.size(); ++i)
         {
@@ -256,6 +290,8 @@ void MainWindow::onLoggin(QString Server, QString User, QString Password)
         TabWidget* W = new TabWidget(getDialogByTable("zamowienia", DoubleModel), M, this);
         QPushButton* Complete = new QPushButton(tr("Complete order"), W);
         QPushButton* Pay = new QPushButton(tr("Pay"), W);
+
+        connect(this, &MainWindow::requestRefresh, W, &TabWidget::refresh);
 
         // TODO connect pay and complete
 

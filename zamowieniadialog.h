@@ -65,7 +65,7 @@ signals:
     void clientsNameRequest();
     void discountRequest(double Kwota);
 
-    void accepted(QList<QVariant> Zamowienie, QList<QList<QVariant>> Pozycje);
+    void accepted(QMap<QString, QVariant> Zamowienie, QMap<QString, QList<QVariant>> Pozycje);
 
 };
 

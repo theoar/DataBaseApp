@@ -10,6 +10,7 @@
 #include <QItemDelegate>
 #include <QDebug>
 #include <QTableView>
+#include <QSqlQuery>
 
 #include "basedialog.h"
 
@@ -46,12 +47,15 @@ private:
     BaseDialog *Dialog;
     QSqlQueryModel *Model;
 
+public slots:
+    void refresh();
+
 private slots:
 
     void onAddButton();
     void onDeleteButton();
     void onDialogAccepted(QMap<QString, QVariant> Vect);
-    void onSearchChanged();
+    void onSearchChanged();    
 
 };
 

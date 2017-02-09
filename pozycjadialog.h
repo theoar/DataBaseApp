@@ -33,9 +33,12 @@ private:
 
 signals:
     void accepted(QStringList List);
+    void requestModel(void);
+
 public slots:    
     void onIndexChange(const QItemSelection &newSelection, const QItemSelection &oldSelection);
     void onCountChanged(int Value);
+    void onModelReady(QSqlTableModel* M);
 
     virtual void accept();
 };

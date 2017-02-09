@@ -50,6 +50,20 @@ void PozycjaDialog::onCountChanged(int Value)
     }
 }
 
+void PozycjaDialog::onModelReady(QSqlTableModel *Mod)
+{
+    TableWidget = new TabWidget(nullptr, Mod, this);
+    TableWidget->setReadonly(true);
+    TableWidget->getView()->setSelectionBehavior(QAbstractItemView::SelectionBehavior::SelectRows);
+    TableWidget->getView()->hideColumn(0);
+
+    ui->setupUi(this);
+    ui->verticalLayout->addWidget(TableWidget);
+
+    connect(TableWidget->getView()->selectionModel(), &QItemSelectionModel::selectionChanged, this, &PozycjaDialog::onIndexChange);
+    ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(false);
+}
+
 void PozycjaDialog::accept()
 {
     QStringList List;

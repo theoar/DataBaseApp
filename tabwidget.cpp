@@ -12,7 +12,8 @@ TabWidget::TabWidget(BaseDialog *Dial, QSqlQueryModel * M, QWidget *parent) :
 
     auto Ss = ui->View->selectionModel();
     auto Mm = ui->View->model();
-	ui->View->setModel(Model);
+	ui->View->setModel(Model);    
+
 
     Ss->deleteLater();
     Mm->deleteLater();
@@ -82,7 +83,7 @@ void TabWidget::hideColumns(QList<int> Hidden)
 }
 QSqlQueryModel *TabWidget::getModel() const
 {
-    return Model;
+    return Model;    
 }
 
 void TabWidget::setModel(QSqlQueryModel *value)
@@ -153,5 +154,13 @@ void TabWidget::onSearchChanged()
 		else Hide = !Model->data(Model->index(i, Index)).toString().contains(Text, Qt::CaseInsensitive);
 
 		ui->View->setRowHidden(i, Hide);
-	}
+    }
+}
+
+void TabWidget::refresh()
+{
+    qDebug() << Model->rowCount();
+    QSqlQuery Q( Model->query() );
+    Model->setQuery(Q);
+    ui->View->update();
 }

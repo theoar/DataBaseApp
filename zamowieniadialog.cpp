@@ -133,21 +133,24 @@ void ZamowieniaDialog::open()
 
 void ZamowieniaDialog::accept()
 {
-    QList<QVariant> Zamowienie;
-    QList<QList<QVariant>> Pozycje;
+    QMap<QString, QVariant> Zamowienie;
+    QMap<QString, QList<QVariant>> Pozycje;
 
     auto Model = ui->View->model();
 
-    Zamowienie.push_back(ui->ClientBox->currentData());
-    Zamowienie.push_back(ui->ShippingBox->currentData());
-    Zamowienie.push_back(QVariant(TotalRabat));
+    Zamowienie.insert("IDKlienta", ui->ClientBox->currentData());
+    Zamowienie.insert("IDWysylki", ui->ShippingBox->currentData());
+    Zamowienie.insert("Rabat", TotalRabat);
+
+    Pozycje.insert("IDProduktu", QList<QVariant>());
+    Pozycje.insert("Ilosc", QList<QVariant>());
+    Pozycje.insert("KosztPozycji", QList<QVariant>());
 
     for(int x = 0; x<Model->rowCount(); ++x)
-    {
-        Pozycje.push_back(QList<QVariant>());
-        Pozycje.last().push_back(Model->index(x, PozycjaColumns::IDProduktu).data());
-        Pozycje.last().push_back(Model->index(x, PozycjaColumns::Ilosc).data());
-        Pozycje.last().push_back(Model->index(x, PozycjaColumns::Koszt).data());
+    {        
+        Pozycje["IDProduktu"].push_back(Model->index(x, PozycjaColumns::IDProduktu).data());
+        Pozycje["Ilosc"].push_back(Model->index(x, PozycjaColumns::Ilosc).data());
+        Pozycje["KosztPozycji"].push_back(Model->index(x, PozycjaColumns::Koszt).data());
     }
 
     emit accepted(Zamowienie, Pozycje);
