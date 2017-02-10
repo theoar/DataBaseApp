@@ -7,16 +7,18 @@ TabWidget::TabWidget(BaseDialog *Dial, QSqlQueryModel * M, QWidget *parent) :
     Dialog(Dial)
 {    
     Model = M;   
-    auto X = Model->record(0); 
+
 	ui->setupUi(this);
 
     auto Ss = ui->View->selectionModel();
     auto Mm = ui->View->model();
-	ui->View->setModel(Model);    
 
+    ui->View->setModel(Model);
 
     Ss->deleteLater();
     Mm->deleteLater();
+
+    onRefresh();
 
     if (Dialog)
     {
@@ -30,6 +32,7 @@ TabWidget::TabWidget(BaseDialog *Dial, QSqlQueryModel * M, QWidget *parent) :
         ui->DeleteButton->hide();
     }
 
+    ui->View->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
 	ui->FilterBox->addItem(tr("All fields"), -1);
 
 	for(int i = 0; i < Model->columnCount(); ++i)
@@ -96,6 +99,40 @@ QTableView *TabWidget::getView()
     return ui->View;
 }
 
+void TabWidget::addPayButton()
+{
+    QPushButton* Pay = new QPushButton(tr("Pay"), this);
+    ui->horizontalLayout->insertWidget(ui->horizontalLayout->indexOf(ui->AddButton),Pay);
+    connect(Pay, &QPushButton::clicked, this, &TabWidget::onPayClicked);
+}
+
+void TabWidget::addCompleteButton()
+{
+
+    QPushButton* Complete = new QPushButton(tr("Complete order"), this);
+    ui->horizontalLayout->insertWidget(ui->horizontalLayout->indexOf(ui->AddButton),Complete);
+    connect(Complete, &QPushButton::clicked, this, &TabWidget::onCompleteClicked);
+}
+
+void TabWidget::addDetailsButton()
+{
+    QPushButton* Details = new QPushButton(tr("Details"), this);
+    ui->horizontalLayout->insertWidget(ui->horizontalLayout->indexOf(ui->AddButton),Details);
+    connect(Details, &QPushButton::clicked, this, &TabWidget::onDetailsClicked);
+}
+
+void TabWidget::hideSearchBar()
+{
+    ui->SearchField->hide();
+    ui->FilterBox->hide();
+}
+
+void TabWidget::hideStandardButtons()
+{
+    ui->AddButton->hide();
+    ui->DeleteButton->hide();
+}
+
 
 void TabWidget::onAddButton()
 {
@@ -157,10 +194,29 @@ void TabWidget::onSearchChanged()
     }
 }
 
-void TabWidget::refresh()
+void TabWidget::onPayClicked()
 {
-    qDebug() << Model->rowCount();
-    QSqlQuery Q( Model->query() );
-    Model->setQuery(Q);
-    ui->View->update();
+    auto Index = ui->View->currentIndex();
+    if(Index.isValid())
+        emit pay(Model->index(Index.row(), Model->record().indexOf("Identyfikator")).data());
+}
+
+void TabWidget::onCompleteClicked()
+{
+    auto Index = ui->View->currentIndex();
+    if(Index.isValid())
+        emit complete(Model->index(Index.row(), Model->record().indexOf("Identyfikator")).data());
+}
+
+void TabWidget::onDetailsClicked()
+{
+    auto Index = ui->View->currentIndex();
+    if(Index.isValid())
+        emit details(Model->index(Index.row(), Model->record().indexOf("Identyfikator")).data());
+}
+
+void TabWidget::onRefresh()
+{
+    if(QSqlTableModel *M = dynamic_cast<QSqlTableModel*>(Model))
+        M->select();
 }

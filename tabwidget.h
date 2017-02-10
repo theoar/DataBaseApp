@@ -11,6 +11,7 @@
 #include <QDebug>
 #include <QTableView>
 #include <QSqlQuery>
+#include <QPushButton>
 
 #include "basedialog.h"
 
@@ -41,6 +42,12 @@ public:
     void setModel(QSqlQueryModel *value);
     QTableView *getView();
 
+    void addPayButton();
+    void addCompleteButton();
+    void addDetailsButton();
+    void hideSearchBar();
+    void hideStandardButtons();
+
 private:
 
     Ui::TabWidget *ui;
@@ -48,14 +55,23 @@ private:
     QSqlQueryModel *Model;
 
 public slots:
-    void refresh();
+    void onRefresh();
 
 private slots:
 
     void onAddButton();
     void onDeleteButton();
     void onDialogAccepted(QMap<QString, QVariant> Vect);
-    void onSearchChanged();    
+    void onSearchChanged();
+
+    void onPayClicked();
+    void onCompleteClicked();
+    void onDetailsClicked();
+
+signals:
+    void pay(QVariant Key);
+    void complete(QVariant Key);
+    void details(QVariant Key);
 
 };
 

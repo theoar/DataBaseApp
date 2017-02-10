@@ -39,7 +39,33 @@ const QList<MainWindow::RELATIONAL> MainWindow::Relationals =
             tr("Street"),
             tr("Home")
         }
+    },
+
+    {
+        "pozycja",
+        tr("Order products"),
+        true, false,
+        {
+            { 2, QSqlRelation("produkty", "IDProduktu", "NazwaProduktu") }
+        },
+        {
+            0, 1
+        },
+        {
+            tr("ID Position"),
+            tr("ID Order"),
+            tr("Product Name"),
+            tr("Count"),
+            tr("Cost"),
+            tr("ID Product"),
+            tr("ID Category"),
+            tr("Product's name"),
+            tr("Price/one"),
+            tr("Magazin state"),
+            tr("Capacity")
+        }
     }
+
 };
 
 MainWindow::MainWindow(QWidget *parent) :
@@ -58,7 +84,7 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
-BaseDialog* MainWindow::getDialogByTable(const QString& Table, QAbstractTableModel *Model)
+BaseDialog* MainWindow::getDialogByTable(const QString& Table)
 {
     if (Table == "klienci")
         return new KlientDialog();
@@ -74,7 +100,7 @@ BaseDialog* MainWindow::getDialogByTable(const QString& Table, QAbstractTableMod
 
     if( Table == "zamowienia" )
     {
-        auto Dialog = new ZamowieniaDialog(dynamic_cast<QSqlRelationalTableModel*>(Model));
+        auto Dialog = new ZamowieniaDialog();
         connect(Dialog, &ZamowieniaDialog::shippingOptionRequest, this, &MainWindow::onShippingOptionsRequest);
         connect(Dialog, &ZamowieniaDialog::clientsNameRequest, this, &MainWindow::onClientsNamesRequest);
         connect(Dialog, &ZamowieniaDialog::discountRequest, this, &MainWindow::onDiscountRequest);
@@ -84,6 +110,7 @@ BaseDialog* MainWindow::getDialogByTable(const QString& Table, QAbstractTableMod
         connect(this, &MainWindow::clientsNamesReady, Dialog, &ZamowieniaDialog::onNewClientsNames);
         connect(this, &MainWindow::discountReady, Dialog, &ZamowieniaDialog::onNewDiscount);
 
+        Dialog->setPozycjaModel(createPozycjaModel());
 
         return Dialog;
     }
@@ -158,6 +185,12 @@ void MainWindow::onNewZamowienie(QMap<QString, QVariant> Zamowienie, QMap<QStrin
         Record.append(QSqlField(i.key(), i.value().type()));
         Record.setValue(i.key(), i.value());
     }
+    QVariant V = QDate().currentDate();
+    Record.append(QSqlField("DataZamowienia", V.type()));
+    Record.setValue("DataZamowienia", V);
+    qDebug() << Record;
+    qDebug() << Model.record();
+
     Model.insertRecord(-1, Record);
 
     QVariant ID = Model.record(Model.rowCount()-1).value("IDZamowienia");
@@ -173,37 +206,103 @@ void MainWindow::onNewZamowienie(QMap<QString, QVariant> Zamowienie, QMap<QStrin
         for(auto i = Pozycje.constBegin(); i != Pozycje.constEnd(); ++i)
             Record.setValue(i.key(), i.value().at(x));
         Model.insertRecord(-1, Record);
-
-        qDebug() << Record;
     }
 
-//    QSqlQuery ZamowienieQuery(DataBase);
+    emit requestRefresh();
+}
 
-//    ZamowienieQuery.prepare("INSERT INTO zamowienia(IDKlienta, DataZamowienia, IDWysylki, Rabat) VALUES(:klient, now(), :wysylka, :rabat)");
-//    ZamowienieQuery.bindValue(":klient", Zamowienie.at(ZamowienieData::IDKlienta));
-//    ZamowienieQuery.bindValue(":wysylka", Zamowienie.at(ZamowienieData::IDWysylki));
-//    ZamowienieQuery.bindValue(":rabat", Zamowienie.at(ZamowienieData::Rabat));
+void MainWindow::onCompleteOrder(QVariant Key)
+{
+    //    QSqlRelationalTableModel Model(nullptr, DataBase);
 
-//    if( ZamowienieQuery.exec() )
-//    {
-//        QVariant NewId = ZamowienieQuery.lastInsertId();
+    //    auto & Table = Relationals[RELATIONALMAP::POSITION];
 
-//        QSqlQuery PozycjaQuery(DataBase);
-//        PozycjaQuery.prepare("INSERT INTO pozycja(IDZamowienia, IDProduktu, Ilosc, KosztPozycji) VALUES(:zamowienie, :produkt, :ilosc, :koszt)");
-//        PozycjaQuery.bindValue(":zamowienie", NewId );
-//        for(auto & Element : Pozycje)
-//        {
-//            PozycjaQuery.bindValue(":produkt", Element.at(PozycjeData::IDProduktu));
-//            PozycjaQuery.bindValue(":ilosc", Element.at(PozycjeData::Ilosc));
-//            PozycjaQuery.bindValue(":koszt", Element.at(PozycjeData::KosztPozycji));
+    //    Model->setTable(Table.Table);
+    //    Model->setFilter(QString("produkty.IDZamowienia=%1 AND StanMagazynu>").arg(Key.toString()));
 
-//            qDebug() << PozycjaQuery.lastQuery();
-//            if( !PozycjaQuery.exec() )
-//                qDebug() << PozycjaQuery.lastError();
-//        }
-//    }
+
+    //    for (const auto& Relation : Table.Relations)
+    //        Model->setRelation(Relation.first, Relation.second);
+
+    //    for (int i = 0; i < Model->columnCount() && i < Table.Headers.size(); ++i)
+    //        Model->setHeaderData(i, Qt::Horizontal, Table.Headers[i]);
+
+    //    Model->select();
+
+
+    QSqlQueryModel Model;
+    Model.setQuery(" SELECT P.IDProduktu, P.NazwaProduktu AS 'Nazwa Produktu', P.Pojemnosc,P.StanMagazynu-PZ.Ilosc AS Brak"
+                   " FROM produkty P INNER JOIN pozycja PZ ON PZ.IDproduktu=P.IDProduktu"
+                   " WHERE PZ.IDZamowienia=" + Key.toString(), DataBase);
+
+    qDebug() << Model.query().lastQuery();
+
+    QList<QStringList> Lista;
+    QStringList Headers = { tr("Product name"), tr("Capacity"), tr("Missing") };
+
+    for(int x = 0; x<Model.rowCount(); ++x)
+    {
+        auto Record = Model.record(x);
+        qDebug() << Record;
+        if(Record.value("Brak").toInt() < 0)
+        {
+            Lista.push_back(QStringList());
+            Lista.last().append(Record.value("Nazwa Produktu").toString()),
+            Lista.last().append(Record.value("Pojemnosc").toString()),
+            Lista.last().append(QString::number(Record.value("Brak").toInt()*-1));
+        }
+    }
+
+    if(Lista.isEmpty())
+    {
+        Model.setQuery("SELECT CzyOplacone FROM zamowienia WHERE IDZamowienia=" + Key.toString());
+        if(Model.rowCount() > 0 && Model.record(0).value("CzyOplacone").toInt()>0)
+            Model.setQuery("UPDATE zamowienia SET DataRealizacji=NOW() WHERE IDZamowienia="+ Key.toString());
+        else
+            QMessageBox::information(this, tr("Information"), tr("Order number: %1 not payed").arg(Key.toString()));
+
+    }
+    else
+    {
+        OutOfDialog *Dialog = new OutOfDialog(Headers, Lista, this);
+        connect(Dialog, &OutOfDialog::accepted, Dialog, &OutOfDialog::deleteLater);
+        connect(Dialog, &OutOfDialog::rejected, Dialog, &OutOfDialog::deleteLater);
+
+        Dialog->open();
+    }
+
+
+    requestRefresh();
+
+    qDebug() << Key;
+}
+
+void MainWindow::onPayOrder(QVariant Key)
+{
+    QSqlTableModel Model(nullptr, DataBase);
+    Model.setEditStrategy(QSqlTableModel::OnFieldChange);
+    Model.setTable("zamowienia");
+    Model.setFilter("IDZamowienia= "+ Key.toString());
+    Model.select();
+
+    for(int x = 0; x<Model.rowCount(); x++)
+        Model.setData(Model.index(x, Model.record().indexOf("CzyOplacone")), QVariant(1));
 
     emit requestRefresh();
+}
+
+void MainWindow::onDetails(QVariant Key)
+{
+    QSqlRelationalTableModel *M = dynamic_cast<QSqlRelationalTableModel*>(Models.value("pozycja"));
+    ui->MainTab->setCurrentWidget(TabsWidgets.value("pozycja"));
+    if(M)
+    {
+        M->setFilter("IDZamowienia="+Key.toString());
+        ui->MainTab->setTabEnabled(ui->MainTab->indexOf(TabsWidgets.value("pozycja")), true);
+        qDebug() << M->query().lastQuery();
+        qDebug() << M->record();
+        qDebug() << M->rowCount();
+    }
 }
 
 
@@ -227,7 +326,6 @@ void MainWindow::onLoggin(QString Server, QString User, QString Password)
         return;
     }
 
-    QSqlRelationalTableModel *DoubleModel;
     // tabele relacyjne
     for (const auto& Table : Relationals)
     {
@@ -247,7 +345,7 @@ void MainWindow::onLoggin(QString Server, QString User, QString Password)
             M->setHeaderData(i, Qt::Horizontal, Table.Headers[i]);
         }
 
-        TabWidget* W = new TabWidget(getDialogByTable(Table.Table, M), M, this);
+        TabWidget* W = new TabWidget(getDialogByTable(Table.Table), M, this);
 
         W->setDelegate(new QSqlRelationalDelegate(W));
         W->setReadonly(Table.Readonly);
@@ -256,56 +354,42 @@ void MainWindow::onLoggin(QString Server, QString User, QString Password)
 
         ui->MainTab->addTab(W, Table.Name);
 
-        if(Table.Table=="produkty")
-            DoubleModel = M;
+        Models.insert(Table.Table, M);
+        TabsWidgets.insert(Table.Table, W);
     }
 
     // tabele specjalne
     {
-        static const QStringList Headers =
-        {
-            // TODO headers
-        };
 
-        QSqlQueryModel* M = new QSqlQueryModel(this);
+        QSqlTableModel* M = new QSqlTableModel(this, DataBase);
+        M->setTable("zamowienia_view");
 
-        M->setQuery(" SELECT Z.IDZamowienia AS Identyfikator, K.Nazwa AS Klient,"
-                    " Z.DataZamowienia AS 'Data zamówienia', Z.DataRealizacji AS 'Data realizacji',"
-                    " Z.CzyOplacone AS Opłacone, Z.Rabat AS Rabat, W.SposobWysylki AS 'Sposób wysyłki',"
-                    " Pr.NazwaProduktu AS 'Nazwa produktu', Pr.Pojemnosc AS 'Pojemność',"
-                    " P.Ilosc, P.KosztPozycji AS 'Cena jednostkowa'"
-                    " FROM zamowienia Z"
-                    " LEFT JOIN klienci K ON K.IDKlienta=Z.IDKlienta"
-                    " LEFT JOIN wysylka W ON Z.IDWysylki=W.IDWysylki"
-                    " LEFT JOIN pozycja P ON P.IDZamowienia=Z.IDZamowienia"
-                    " LEFT JOIN produkty Pr ON Pr.IDProduktu=P.IDProduktu", DataBase);
+        TabWidget* W = new TabWidget(getDialogByTable("zamowienia"), M, this);
 
-        qDebug() << M->rowCount();        
+        W->addPayButton();
+        W->addCompleteButton();
+        W->addDetailsButton();
 
-        for (int i = 0; i < M->columnCount() && i < Headers.size(); ++i)
-        {
-            M->setHeaderData(i, Qt::Horizontal, Headers[i]);
-        }
-
-        TabWidget* W = new TabWidget(getDialogByTable("zamowienia", DoubleModel), M, this);
-        QPushButton* Complete = new QPushButton(tr("Complete order"), W);
-        QPushButton* Pay = new QPushButton(tr("Pay"), W);
-
-        connect(this, &MainWindow::requestRefresh, W, &TabWidget::refresh);
-
-        // TODO connect pay and complete
+        connect(this, &MainWindow::requestRefresh, W, &TabWidget::onRefresh);
+        connect(W, &TabWidget::pay, this, &MainWindow::onPayOrder);
+        connect(W, &TabWidget::complete, this, &MainWindow::onCompleteOrder);
+        connect(W, &TabWidget::details, this, &MainWindow::onDetails);
 
         W->setReadonly(true);
         W->setDeleteable(false);
 
-        W->insertWidget(Complete);
-        W->insertWidget(Pay);
 
         ui->MainTab->addTab(W, tr("Orders"));
+
+        Models.insert("zamowienia", M);
+        TabsWidgets.insert("zamowienia", W);
     }
 
     ui->StatusLable->hide();
     ui->MainTab->show();
+
+    ui->MainTab->setTabEnabled(ui->MainTab->indexOf(TabsWidgets.value("pozycja")), false);
+    configurePozycje();
 }
 
 void MainWindow::onActionLogin()
@@ -322,27 +406,55 @@ void MainWindow::onActionLogin()
 
 void MainWindow::onActionCheckCount()
 {
-//    QSqlQuery Query(DataBase);
+    //    QSqlQuery Query(DataBase);
 
-//    Query.prepare("SELECT NazwaProduktu, Pojemnosc, StanMagazynu FROM produkty WHERE StanMagazynu<500");
+    //    Query.prepare("SELECT NazwaProduktu, Pojemnosc, StanMagazynu FROM produkty WHERE StanMagazynu<500");
 
-//    if(Query.exec() && Query.size()>0)
-//    {
-//        QStringList List;
+    //    if(Query.exec() && Query.size()>0)
+    //    {
+    //        QStringList List;
 
-//        while(Query.next())
-//        {
-//            QStringList L;
-//            qDebug() << Query.record().count();
-//            for(int x; x<Query.record().count(); ++x)
-//                L.push_back(Query.record().field(x).value().toString().append(' '));
+    //        while(Query.next())
+    //        {
+    //            QStringList L;
+    //            qDebug() << Query.record().count();
+    //            for(int x; x<Query.record().count(); ++x)
+    //                L.push_back(Query.record().field(x).value().toString().append(' '));
 
-//            List.push_back(L.join(','));
-//        }
+    //            List.push_back(L.join(','));
+    //        }
 
-//        QMessageBox::information(this, tr("Out of..."), List.join('\n'));
+    //        QMessageBox::information(this, tr("Out of..."), List.join('\n'));
 
-//    }
-//    else
-//        qDebug() << Query.lastError();
+    //    }
+    //    else
+    //        qDebug() << Query.lastError();
+}
+
+QSqlTableModel* MainWindow::createPozycjaModel()
+{
+    QSqlRelationalTableModel* M = new QSqlRelationalTableModel(this, DataBase);
+
+    auto &Table = Relationals[0];
+
+    M->setTable(Table.Table);
+
+    for (const auto& Relation : Table.Relations)
+    {
+        M->setRelation(Relation.first, Relation.second);
+    }
+
+    M->select();
+
+    for (int i = 0; i < M->columnCount() && i < Table.Headers.size(); ++i)
+    {
+        M->setHeaderData(i, Qt::Horizontal, Table.Headers[i]);
+    }
+
+    return M;
+}
+
+void MainWindow::configurePozycje()
+{
+    TabsWidgets.value("pozycja")->hideStandardButtons();
 }

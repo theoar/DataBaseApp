@@ -23,91 +23,98 @@
 #include "produktydialog.h"
 #include "zamowieniadialog.h"
 #include "products.h"
+#include "outofdialog.h"
 
 #define PRODUKTY 1
 
 namespace Ui {
-	class MainWindow;
+class MainWindow;
 }
 
 class MainWindow : public QMainWindow
 {
 
-		Q_OBJECT
+    Q_OBJECT
 
-	public: struct RELATIONAL
-	{
-		QString Table;
-		QString Name;
+public:
+    struct RELATIONAL
+    {
+        QString Table;
+        QString Name;
 
-		bool Readonly;
-		bool Deleteable;
+        bool Readonly;
+        bool Deleteable;
 
-		QList<QPair<int, QSqlRelation>> Relations;
-		QList<int> Hidden;
-		QStringList Headers;
-	};
+        QList<QPair<int, QSqlRelation>> Relations;
+        QList<int> Hidden;
+        QStringList Headers;
+    };
 
-	public:
+    enum RELATIONALMAP
+    {
+        PRODUCTS = 0,
+        CLIENTS = 1,
+        POSITION = 2,
+    };
 
-		static const QList<RELATIONAL> Relationals;
+public:
 
-		explicit MainWindow(QWidget *parent = 0);
-		~MainWindow();
+    static const QList<RELATIONAL> Relationals;
 
-	private:
+    explicit MainWindow(QWidget *parent = 0);
+    ~MainWindow();
 
-		Ui::MainWindow *ui;
-		LoginDialog *Login;
-		QSqlDatabase DataBase;
+private:
 
-		QString UserName;
+    Ui::MainWindow *ui;
+    LoginDialog *Login;
+    QSqlDatabase DataBase;
 
-		QSqlTableModel *KlienciModel;
+    QString UserName;
 
-        BaseDialog* getDialogByTable(const QString& Table, QAbstractTableModel *Model = nullptr);
+    BaseDialog* getDialogByTable(const QString& Table);
+    QSqlTableModel* createPozycjaModel();
+    void configurePozycje(void);
 
-        enum ZamowienieData
-        {
-            IDKlienta = 0,
-            IDWysylki = 1,
-            Rabat = 2
-        };
+    QMap<QString, TabWidget*> TabsWidgets;
+    QMap<QString, QSqlQueryModel*> Models;
 
-        enum PozycjeData
-        {
-            IDProduktu = 0,
-            Ilosc = 1,
-            KosztPozycji = 2
-        };
 
-	private slots:
 
-		void onCategoriesRequest(void);
-        void onShippingOptionsRequest(void);
-        void onClientsNamesRequest(void);        
-        void onDiscountRequest(double Kwota);
-        void onNewZamowienie(QMap<QString, QVariant> Zamowienie, QMap<QString, QList<QVariant> > Pozycje);
 
-        void onDataRequest(void); //TO DO
+private slots:
 
-		void onLoggin(QString Server, QString User, QString Password);
+    void onCategoriesRequest(void);
+    void onShippingOptionsRequest(void);
+    void onClientsNamesRequest(void);
+    void onDiscountRequest(double Kwota);
+    void onNewZamowienie(QMap<QString, QVariant> Zamowienie, QMap<QString, QList<QVariant> > Pozycje);
+    void onCompleteOrder(QVariant Key);
+    void onPayOrder(QVariant Key);
+    void onDetails(QVariant Key);
 
-		void onActionLogin(void);
-        void onActionCheckCount(void);
+    void onDataRequest(void); //TO DO
 
-	signals:
+    void onLoggin(QString Server, QString User, QString Password);
 
-		void categoriesReady(QList<QPair<QString, int>>);
-        void shippingOpitonsReady(QList<QPair<QString, int>>);
-        void clientsNamesReady(QList<QPair<QString, int>>);        
-        void discountReady(int);
+    void onActionLogin(void);
+    void onActionCheckCount(void);
 
-		void dataReady(QList<QPair<QString, int>>,
-					QList<QPair<QString, int>>,
-					QList<QPair<QString, int>>);
 
-        void requestRefresh();
+signals:
+
+    void categoriesReady(QList<QPair<QString, int>>);
+    void shippingOpitonsReady(QList<QPair<QString, int>>);
+    void clientsNamesReady(QList<QPair<QString, int>>);
+    void discountReady(int);
+
+    void dataReady(QList<QPair<QString, int>>,
+                   QList<QPair<QString, int>>,
+                   QList<QPair<QString, int>>);
+
+    void requestRefresh();
+
+
 };
 
 #endif // MAINWINDOW_H

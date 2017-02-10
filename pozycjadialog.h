@@ -20,10 +20,10 @@ class PozycjaDialog : public QDialog
     Q_OBJECT
 
 public:
-    explicit PozycjaDialog(QSqlRelationalTableModel *Mod, QWidget *parent = 0);
+    explicit PozycjaDialog(QWidget *parent = 0);
     ~PozycjaDialog();
 
-    void setModel(QSqlRelationalTableModel *M);   
+    void setModel(QSqlTableModel *Mod);
 
 
 private:
@@ -32,13 +32,11 @@ private:
     TabWidget *TableWidget;
 
 signals:
-    void accepted(QStringList List);
-    void requestModel(void);
+    void accepted(QStringList List);    
 
 public slots:    
     void onIndexChange(const QItemSelection &newSelection, const QItemSelection &oldSelection);
-    void onCountChanged(int Value);
-    void onModelReady(QSqlTableModel* M);
+    void onCountChanged(int Value);    
 
     virtual void accept();
 };

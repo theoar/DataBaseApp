@@ -1,11 +1,11 @@
 #include "zamowieniadialog.h"
 #include "ui_zamowieniadialog.h"
 
-ZamowieniaDialog::ZamowieniaDialog(QSqlRelationalTableModel *Mod, QWidget *parent) :
+ZamowieniaDialog::ZamowieniaDialog(QWidget *parent) :
     BaseDialog(parent),
     ui(new Ui::ZamowieniaDialog)
 {
-    Dialog = new PozycjaDialog(Mod, this);
+    Dialog = new PozycjaDialog(this);
     ui->setupUi(this);
 
     ui->View->setModel(new QStandardItemModel(0,4));
@@ -22,6 +22,11 @@ ZamowieniaDialog::ZamowieniaDialog(QSqlRelationalTableModel *Mod, QWidget *paren
 ZamowieniaDialog::~ZamowieniaDialog()
 {
     delete ui;
+}
+
+void ZamowieniaDialog::setPozycjaModel(QSqlTableModel *M)
+{
+    Dialog->setModel(M);
 }
 
 void ZamowieniaDialog::updateTotalCost()
@@ -71,7 +76,6 @@ void ZamowieniaDialog::onNewDiscount(int Rabat)
 
 void ZamowieniaDialog::onAddPozycja()
 {
-
     Dialog->open();
 }
 
@@ -159,4 +163,9 @@ void ZamowieniaDialog::accept()
         ui->View->model()->removeRows(0, ui->View->model()->rowCount());
 
     QDialog::accept();
+}
+
+void ZamowieniaDialog::onRefreshRequest()
+{
+
 }

@@ -21,13 +21,15 @@ class ZamowieniaDialog : public BaseDialog
     Q_OBJECT
 
 public:
-    explicit ZamowieniaDialog(QSqlRelationalTableModel *Mod, QWidget *parent = 0);
+    explicit ZamowieniaDialog(QWidget *parent = 0);
     ~ZamowieniaDialog();
+
+    void setPozycjaModel(QSqlTableModel *M);
 
 private:
     Ui::ZamowieniaDialog *ui;
     PozycjaDialog *Dialog;
-    QStringList TableHeaders = { tr("IDProduct"),tr("Name"), tr("Count"), tr("Cost per one") };
+    QStringList TableHeaders = { tr("IDProduct"),tr("Name"), tr("Cost per one"), tr("Count") };
     QString StaticDataLabel = tr("Order date: ");
     QString StaticTotalCostLabel = tr("Total cost: ");
     QString StaticDiscountLabel = tr("Discount: ");
@@ -59,6 +61,8 @@ public slots:
 
     virtual void open();
     virtual void accept();
+
+    void onRefreshRequest();
 
 signals:
     void shippingOptionRequest();
