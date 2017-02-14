@@ -22,8 +22,9 @@
 #include "tabwidget.h"
 #include "produktydialog.h"
 #include "zamowieniadialog.h"
-#include "products.h"
+
 #include "outofdialog.h"
+#include "detailsdialog.h"
 
 #define PRODUKTY 1
 
@@ -74,13 +75,10 @@ private:
 
     BaseDialog* getDialogByTable(const QString& Table);
     QSqlTableModel* createPozycjaModel();
-    void configurePozycje(void);
+
 
     QMap<QString, TabWidget*> TabsWidgets;
     QMap<QString, QSqlQueryModel*> Models;
-
-
-
 
 private slots:
 
@@ -91,7 +89,9 @@ private slots:
     void onNewZamowienie(QMap<QString, QVariant> Zamowienie, QMap<QString, QList<QVariant> > Pozycje);
     void onCompleteOrder(QVariant Key);
     void onPayOrder(QVariant Key);
-    void onDetails(QVariant Key);
+    void onDetails(QMap<QString, QVariant> Map);
+    void onOrderDataRequest(int PK);
+    void onEdit();
 
     void onDataRequest(void); //TO DO
 
@@ -107,6 +107,7 @@ signals:
     void shippingOpitonsReady(QList<QPair<QString, int>>);
     void clientsNamesReady(QList<QPair<QString, int>>);
     void discountReady(int);
+    void orderDataReady(QMap<QString, QVariant> Map, QList<QStringList> List);
 
     void dataReady(QList<QPair<QString, int>>,
                    QList<QPair<QString, int>>,

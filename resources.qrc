@@ -3,5 +3,6 @@
         <file>media-eject.png</file>
         <file>list-add.png</file>
         <file>list-remove.png</file>
+        <file>task-due.png</file>
     </qresource>
 </RCC>

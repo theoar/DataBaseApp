@@ -8,9 +8,9 @@
 #include <QStandardItemModel>
 #include <QDate>
 
-#include "basedialog.h"
-#include "products.h"
 #include "pozycjadialog.h"
+#include "basedialog.h"
+
 
 namespace Ui {
 class ZamowieniaDialog;
@@ -35,8 +35,11 @@ private:
     QString StaticDiscountLabel = tr("Discount: ");
     QString StaticDiscountCostLabe = tr("Cost with discount: ");
 
+    QMap<QString, QVariant> EditedOrder;
+
     double TotalKoszt;
     int TotalRabat;
+    int IDZamowienia = -1;
 
     void updateTotalCost();
     int isAlredyInOrder(const QStringList &List);
@@ -60,6 +63,7 @@ public slots:
     void onIndexChanged(const QItemSelection &newSelection, const QItemSelection &oldSelection);
 
     virtual void open();
+    virtual void open(QList<QStringList> List, QMap<QString, QVariant> Zamowienie);
     virtual void accept();
 
     void onRefreshRequest();
@@ -70,6 +74,9 @@ signals:
     void discountRequest(double Kwota);
 
     void accepted(QMap<QString, QVariant> Zamowienie, QMap<QString, QList<QVariant>> Pozycje);
+
+private:
+    void setOrderFields(QMap<QString, QVariant> OrderData);
 
 };
 

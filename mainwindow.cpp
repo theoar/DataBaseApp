@@ -176,24 +176,53 @@ void MainWindow::onDiscountRequest(double Kwota)
 
 void MainWindow::onNewZamowienie(QMap<QString, QVariant> Zamowienie, QMap<QString, QList<QVariant>> Pozycje)
 {
+    QVariant ID;
     QSqlTableModel Model(nullptr, DataBase);
-    Model.setTable("zamowienia");
-
     QSqlRecord Record;
-    for(auto i = Zamowienie.constBegin(); i != Zamowienie.constEnd(); ++i)
+
+    if(Zamowienie.keys().contains("IDZamowienia"))
     {
-        Record.append(QSqlField(i.key(), i.value().type()));
-        Record.setValue(i.key(), i.value());
+        ID = Zamowienie["IDZamowienia"];
+
+        QSqlQuery Query(DataBase);
+        Query.exec(" DELETE pozycja"
+                   " FROM zamowienia"
+                   " INNER JOIN pozycja ON pozycja.IDZamowienia=zamowienia.IDZamowienia"
+                   " WHERE zamowienia.IDZamowienia="+ID.toString());
+
+        Query.prepare("UPDATE zamowienia SET IDWysylki=:wys, IDKlienta=:kli, Rabat=:rb WHERE IDZamowienia=:id");
+        Query.bindValue(":wys", Zamowienie["IDWysylki"].toString());
+        Query.bindValue(":kli", Zamowienie["IDKlienta"].toString());
+        Query.bindValue(":id", ID.toString());
+        Query.bindValue(":rb", Zamowienie["Rabat"].toString());
+
+
+        qDebug() << Zamowienie;
+        qDebug() << Query.lastQuery();
+
+        Query.exec();
+
+        qDebug() << Query.lastError();
     }
-    QVariant V = QDate().currentDate();
-    Record.append(QSqlField("DataZamowienia", V.type()));
-    Record.setValue("DataZamowienia", V);
-    qDebug() << Record;
-    qDebug() << Model.record();
+    else
+    {
+        Model.setTable("zamowienia");
 
-    Model.insertRecord(-1, Record);
+        for(auto i = Zamowienie.constBegin(); i != Zamowienie.constEnd(); ++i)
+        {
+            Record.append(QSqlField(i.key(), i.value().type()));
+            Record.setValue(i.key(), i.value());
+        }
+        QVariant V = QDate().currentDate();
+        Record.append(QSqlField("DataZamowienia", V.type()));
+        Record.setValue("DataZamowienia", V);
+        qDebug() << Record;
+        qDebug() << Model.record();
 
-    QVariant ID = Model.record(Model.rowCount()-1).value("IDZamowienia");
+        Model.insertRecord(-1, Record);
+
+       ID = Model.record(Model.rowCount()-1).value("IDZamowienia");
+    }
 
     Model.setTable("pozycja");
     Record = Model.record();
@@ -208,37 +237,30 @@ void MainWindow::onNewZamowienie(QMap<QString, QVariant> Zamowienie, QMap<QStrin
         Model.insertRecord(-1, Record);
     }
 
+
     emit requestRefresh();
 }
 
 void MainWindow::onCompleteOrder(QVariant Key)
 {
-    //    QSqlRelationalTableModel Model(nullptr, DataBase);
+    QSqlQuery Query(DataBase);
+    Query.exec("SELECT DataRealizacji FROM zamowienia WHERE IDZamowienia="+Key.toString());
 
-    //    auto & Table = Relationals[RELATIONALMAP::POSITION];
-
-    //    Model->setTable(Table.Table);
-    //    Model->setFilter(QString("produkty.IDZamowienia=%1 AND StanMagazynu>").arg(Key.toString()));
-
-
-    //    for (const auto& Relation : Table.Relations)
-    //        Model->setRelation(Relation.first, Relation.second);
-
-    //    for (int i = 0; i < Model->columnCount() && i < Table.Headers.size(); ++i)
-    //        Model->setHeaderData(i, Qt::Horizontal, Table.Headers[i]);
-
-    //    Model->select();
-
+    if(Query.next() && Query.value("DataRealizacji").toDate().isValid())
+    {
+        QMessageBox::information(this, tr("Can not do that"), tr("This order is alredy completed"));
+        return;
+    }
 
     QSqlQueryModel Model;
-    Model.setQuery(" SELECT P.IDProduktu, P.NazwaProduktu AS 'Nazwa Produktu', P.Pojemnosc,P.StanMagazynu-PZ.Ilosc AS Brak"
+    Model.setQuery(" SELECT P.IDProduktu, CONCAT(P.NazwaProduktu, ', ', P.Pojemnosc, ' l') AS 'Nazwa Produktu', P.Pojemnosc, P.StanMagazynu-PZ.Ilosc AS Brak"
                    " FROM produkty P INNER JOIN pozycja PZ ON PZ.IDproduktu=P.IDProduktu"
                    " WHERE PZ.IDZamowienia=" + Key.toString(), DataBase);
 
     qDebug() << Model.query().lastQuery();
 
     QList<QStringList> Lista;
-    QStringList Headers = { tr("Product name"), tr("Capacity"), tr("Missing") };
+    QStringList Headers = { tr("Product name"), tr("Missing") };
 
     for(int x = 0; x<Model.rowCount(); ++x)
     {
@@ -248,8 +270,7 @@ void MainWindow::onCompleteOrder(QVariant Key)
         {
             Lista.push_back(QStringList());
             Lista.last().append(Record.value("Nazwa Produktu").toString()),
-            Lista.last().append(Record.value("Pojemnosc").toString()),
-            Lista.last().append(QString::number(Record.value("Brak").toInt()*-1));
+                    Lista.last().append(QString::number(Record.value("Brak").toInt()*-1));
         }
     }
 
@@ -257,7 +278,16 @@ void MainWindow::onCompleteOrder(QVariant Key)
     {
         Model.setQuery("SELECT CzyOplacone FROM zamowienia WHERE IDZamowienia=" + Key.toString());
         if(Model.rowCount() > 0 && Model.record(0).value("CzyOplacone").toInt()>0)
+        {
             Model.setQuery("UPDATE zamowienia SET DataRealizacji=NOW() WHERE IDZamowienia="+ Key.toString());
+
+            QSqlQuery Query(DataBase);
+            Query.prepare(" UPDATE produkty p"
+                          " INNER JOIN pozycja pz ON pz.IDProduktu=p.IDProduktu"
+                          " SET p.StanMagazynu=p.StanMagazynu-pz.Ilosc"
+                          " WHERE pz.IDZamowienia="+Key.toString());
+            Query.exec();
+        }
         else
             QMessageBox::information(this, tr("Information"), tr("Order number: %1 not payed").arg(Key.toString()));
 
@@ -291,18 +321,69 @@ void MainWindow::onPayOrder(QVariant Key)
     emit requestRefresh();
 }
 
-void MainWindow::onDetails(QVariant Key)
+void MainWindow::onDetails(QMap<QString, QVariant> Map)
 {
-    QSqlRelationalTableModel *M = dynamic_cast<QSqlRelationalTableModel*>(Models.value("pozycja"));
-    ui->MainTab->setCurrentWidget(TabsWidgets.value("pozycja"));
-    if(M)
+    QSqlTableModel * ModPozycja = dynamic_cast<QSqlTableModel *>(Models["pozycje_view"]);
+
+    if( !ModPozycja )
+        return;
+
+    ModPozycja->setFilter("IDZamowienia=" + Map["Identyfikator"].toString());
+    qDebug() << ModPozycja->filter();
+
+
+    QDialog *Dialog = new DetailsDialog(ModPozycja, Map, this);
+    connect(Dialog, &QDialog::accepted, Dialog, &QDialog::deleteLater);
+    connect(Dialog, &QDialog::rejected, Dialog, &QDialog::deleteLater);
+
+    Dialog->open();
+}
+
+void MainWindow::onOrderDataRequest(int PK)
+{
+    QSqlQuery Query(DataBase);
+    Query.exec(" SELECT k.IDKlienta, k.Nazwa, w.IDWysylki, w.SposobWysylki, z.DataZamowienia"
+                " FROM klienci k"
+                " INNER JOIN zamowienia z ON z.IDKlienta=k.IDKlienta"
+                " INNER JOIN wysylka w ON z.IDWysylki=w.IDWysylki"
+                " WHERE z.IDZamowienia="+QString::number(PK));
+
+    QMap<QString, QVariant> Map;
+    QList<QStringList> List;
+
+    QSqlRecord Record = Query.record();
+    if(Query.next())
+        for(int x = 0; x<Query.record().count(); ++x)
+            Map.insert(Record.fieldName(x), Query.value(x));
+
+    Map.insert("IDZamowienia", QVariant(PK));
+
+    Query.exec(" SELECT poz.IDProduktu, CONCAT(p.NazwaProduktu, ', ', p.Pojemnosc, ' l'), poz.KosztPozycji, poz.Ilosc"
+               " FROM pozycja poz INNER JOIN produkty p ON poz.IDProduktu=p.IDProduktu"
+               " WHERE IDZamowienia="+QString::number(PK));
+
+
+    while(Query.next())
     {
-        M->setFilter("IDZamowienia="+Key.toString());
-        ui->MainTab->setTabEnabled(ui->MainTab->indexOf(TabsWidgets.value("pozycja")), true);
-        qDebug() << M->query().lastQuery();
-        qDebug() << M->record();
-        qDebug() << M->rowCount();
+        QStringList L;
+        L.push_back(Query.value(0).toString());
+        L.push_back(Query.value(1).toString());
+        L.push_back(Query.value(2).toString());
+        L.push_back(Query.value(3).toString());
+        List.push_back(L);
     }
+
+    emit orderDataReady(Map, List);
+
+    ZamowieniaDialog* Z = dynamic_cast<ZamowieniaDialog*>(TabsWidgets["zamowienia"]->getDialog());
+    if(Z)
+        Z->open(List, Map);
+
+}
+
+void MainWindow::onEdit()
+{
+
 }
 
 
@@ -319,7 +400,10 @@ void MainWindow::onLoggin(QString Server, QString User, QString Password)
     DataBase.setHostName(Server);
 
     if (DataBase.open())
+    {
         ui->LoginAction->setEnabled(false);
+        ui->CheckCountAction->setEnabled(true);
+    }
     else
     {
         QMessageBox::critical(this, tr("Error"), DataBase.lastError().text());
@@ -330,6 +414,7 @@ void MainWindow::onLoggin(QString Server, QString User, QString Password)
     for (const auto& Table : Relationals)
     {
         QSqlRelationalTableModel* M = new QSqlRelationalTableModel(this, DataBase);
+        M->setEditStrategy(QSqlTableModel::EditStrategy::OnFieldChange);
 
         M->setTable(Table.Table);
 
@@ -347,12 +432,15 @@ void MainWindow::onLoggin(QString Server, QString User, QString Password)
 
         TabWidget* W = new TabWidget(getDialogByTable(Table.Table), M, this);
 
+        connect(this, &MainWindow::requestRefresh, W, &TabWidget::onRefresh);
+
         W->setDelegate(new QSqlRelationalDelegate(W));
         W->setReadonly(Table.Readonly);
         W->setDeleteable(Table.Deleteable);
         W->hideColumns(Table.Hidden);
 
-        ui->MainTab->addTab(W, Table.Name);
+        if(Table.Table!="pozycja")
+            ui->MainTab->addTab(W, Table.Name);
 
         Models.insert(Table.Table, M);
         TabsWidgets.insert(Table.Table, W);
@@ -369,11 +457,15 @@ void MainWindow::onLoggin(QString Server, QString User, QString Password)
         W->addPayButton();
         W->addCompleteButton();
         W->addDetailsButton();
+        W->addEditButton();
 
         connect(this, &MainWindow::requestRefresh, W, &TabWidget::onRefresh);
+        connect(this, &MainWindow::orderDataReady, W, &TabWidget::onOrderDataReady);
         connect(W, &TabWidget::pay, this, &MainWindow::onPayOrder);
         connect(W, &TabWidget::complete, this, &MainWindow::onCompleteOrder);
         connect(W, &TabWidget::details, this, &MainWindow::onDetails);
+        connect(W, &TabWidget::requestOrderData, this, &MainWindow::onOrderDataRequest);
+
 
         W->setReadonly(true);
         W->setDeleteable(false);
@@ -383,13 +475,14 @@ void MainWindow::onLoggin(QString Server, QString User, QString Password)
 
         Models.insert("zamowienia", M);
         TabsWidgets.insert("zamowienia", W);
-    }
 
+        M = new QSqlTableModel(this, DataBase);
+        M->setTable("pozycje_view");
+        Models.insert("pozycje_view", M);
+    }
     ui->StatusLable->hide();
     ui->MainTab->show();
 
-    ui->MainTab->setTabEnabled(ui->MainTab->indexOf(TabsWidgets.value("pozycja")), false);
-    configurePozycje();
 }
 
 void MainWindow::onActionLogin()
@@ -454,7 +547,3 @@ QSqlTableModel* MainWindow::createPozycjaModel()
     return M;
 }
 
-void MainWindow::configurePozycje()
-{
-    TabsWidgets.value("pozycja")->hideStandardButtons();
-}

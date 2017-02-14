@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>MainWindow</string>
+   <string>Alcohol Storage</string>
   </property>
   <widget class="QWidget" name="CentralWidget">
    <layout class="QGridLayout" name="gridLayout">
@@ -74,9 +74,12 @@
    </property>
   </action>
   <action name="CheckCountAction">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="icon">
     <iconset resource="resources.qrc">
-     <normaloff>:/new/prefix1/list-remove.png</normaloff>:/new/prefix1/list-remove.png</iconset>
+     <normaloff>:/new/prefix1/task-due.png</normaloff>:/new/prefix1/task-due.png</iconset>
    </property>
    <property name="text">
     <string>Check count</string>

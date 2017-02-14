@@ -7,6 +7,7 @@ KlientDialog::KlientDialog(QWidget *parent) :
 {
     ui->setupUi(this);
     ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(false);
+
 }
 
 KlientDialog::~KlientDialog()

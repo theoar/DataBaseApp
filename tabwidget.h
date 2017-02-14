@@ -45,8 +45,14 @@ public:
     void addPayButton();
     void addCompleteButton();
     void addDetailsButton();
+    void addEditButton();
+
     void hideSearchBar();
     void hideStandardButtons();
+    int getCurrentSelectedPK();
+
+    BaseDialog *getDialog();
+    void setDialog(BaseDialog *value);
 
 private:
 
@@ -56,22 +62,25 @@ private:
 
 public slots:
     void onRefresh();
+    void onOrderDataReady(QMap<QString, QVariant> Map, QList<QStringList> ProductList);
 
 private slots:
 
     void onAddButton();
     void onDeleteButton();
     void onDialogAccepted(QMap<QString, QVariant> Vect);
-    void onSearchChanged();
-
+    void onSearchChanged();    
     void onPayClicked();
     void onCompleteClicked();
     void onDetailsClicked();
+    void onEditClicked();
 
 signals:
     void pay(QVariant Key);
     void complete(QVariant Key);
-    void details(QVariant Key);
+    void details(QMap<QString, QVariant>);
+    void requestOrderData(int PK);
+    void edit(int PK);
 
 };
 

@@ -24,7 +24,8 @@ SOURCES += main.cpp\
     zamowieniadialog.cpp \
     products.cpp \
     pozycjadialog.cpp \
-    outofdialog.cpp
+    outofdialog.cpp \
+    detailsdialog.cpp
 
 HEADERS  += mainwindow.h \
     logindialog.h \
@@ -36,7 +37,8 @@ HEADERS  += mainwindow.h \
     zamowieniadialog.h \
     products.h \
     pozycjadialog.h \
-    outofdialog.h
+    outofdialog.h \
+    detailsdialog.h
 
 FORMS    += mainwindow.ui \
     logindialog.ui \
@@ -45,7 +47,8 @@ FORMS    += mainwindow.ui \
     produktydialog.ui \
     zamowieniadialog.ui \
     pozycjadialog.ui \
-    outofdialog.ui
+    outofdialog.ui \
+    detailsdialog.ui
 
 RESOURCES += \
     resources.qrc

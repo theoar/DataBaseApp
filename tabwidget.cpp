@@ -55,8 +55,9 @@ void TabWidget::setReadonly(bool Readonly)
 {
 	if (Readonly)
 		ui->View->setEditTriggers(0);
-	else
-		ui->View->setEditTriggers(QAbstractItemView::DoubleClicked | QAbstractItemView::EditKeyPressed);
+	else    
+        ui->View->setEditTriggers(QAbstractItemView::DoubleClicked | QAbstractItemView::EditKeyPressed);
+
 }
 
 void TabWidget::setDeleteable(bool Deleteable)
@@ -121,6 +122,13 @@ void TabWidget::addDetailsButton()
     connect(Details, &QPushButton::clicked, this, &TabWidget::onDetailsClicked);
 }
 
+void TabWidget::addEditButton()
+{
+    QPushButton* Edit = new QPushButton(tr("Edit"), this);
+    ui->horizontalLayout->insertWidget(ui->horizontalLayout->indexOf(ui->AddButton),Edit);
+    connect(Edit, &QPushButton::clicked, this, &TabWidget::onEditClicked);
+}
+
 void TabWidget::hideSearchBar()
 {
     ui->SearchField->hide();
@@ -132,6 +140,29 @@ void TabWidget::hideStandardButtons()
     ui->AddButton->hide();
     ui->DeleteButton->hide();
 }
+
+int TabWidget::getCurrentSelectedPK()
+{
+
+    auto M = ui->View->model();
+    auto Item = M->index(ui->View->currentIndex().row(), 0);
+    auto PK = Item.data().toInt();
+
+    if(PK)
+        return PK;
+    else
+        return -1;
+}
+BaseDialog *TabWidget::getDialog()
+{
+    return Dialog;
+}
+
+void TabWidget::setDialog(BaseDialog *value)
+{
+    Dialog = value;
+}
+
 
 
 void TabWidget::onAddButton()
@@ -194,6 +225,13 @@ void TabWidget::onSearchChanged()
     }
 }
 
+void TabWidget::onOrderDataReady(QMap<QString, QVariant> Map, QList<QStringList> ProductList)
+{
+//    ZamowieniaDialog *D = dynamic_cast<ZamowieniaDialog*>(Dialog);
+//    if(D)
+//        D->open(ProductList, Map);
+}
+
 void TabWidget::onPayClicked()
 {
     auto Index = ui->View->currentIndex();
@@ -212,7 +250,35 @@ void TabWidget::onDetailsClicked()
 {
     auto Index = ui->View->currentIndex();
     if(Index.isValid())
-        emit details(Model->index(Index.row(), Model->record().indexOf("Identyfikator")).data());
+    {
+        QMap<QString, QVariant> Map;
+        QSqlRecord Record = Model->record(Index.row());
+        for(int x = 0; x<Record.count(); ++x)
+            Map.insert(Record.fieldName(x), Record.value(x));
+
+        emit details(Map);
+    }
+
+}
+
+void TabWidget::onEditClicked()
+{
+    auto Index = ui->View->currentIndex();
+    if(Index.isValid())
+    {
+        QString Oplacone = Model->index(Index.row(), Model->record().indexOf("Opłacone")).data().toString();
+        QString Zrealizowane = Model->index(Index.row(), Model->record().indexOf("Zrealizowano")).data().toString();
+        int PK = Model->index(Index.row(), Model->record().indexOf("Identyfikator")).data().toInt();
+
+        if(Oplacone=="Tak" || Zrealizowane=="Tak")
+            QMessageBox::information(this, tr("Can not do this"), tr("Can not edit paid or completed order"));
+        else
+        {
+            emit requestOrderData(PK);
+        }
+    }
+    else
+        QMessageBox::information(this, tr("Error"), tr("You didn't selected any item"), QMessageBox::Ok);
 }
 
 void TabWidget::onRefresh()

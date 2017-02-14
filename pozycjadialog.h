@@ -7,9 +7,7 @@
 #include <QSqlRelationalTableModel>
 #include <QTableView>
 
-#include "products.h"
 #include "tabwidget.h"
-
 
 namespace Ui {
 class PozycjaDialog;
@@ -22,13 +20,10 @@ class PozycjaDialog : public QDialog
 public:
     explicit PozycjaDialog(QWidget *parent = 0);
     ~PozycjaDialog();
-
     void setModel(QSqlTableModel *Mod);
 
-
 private:
-    Ui::PozycjaDialog *ui;
-    QList<Products> List;
+    Ui::PozycjaDialog *ui;    
     TabWidget *TableWidget;
 
 signals:

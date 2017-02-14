@@ -54,17 +54,18 @@ int ZamowieniaDialog::isAlredyInOrder(const QStringList &List)
 }
 
 void ZamowieniaDialog::onNewShippingOptions(QList<QPair<QString, int> > List)
-{
-    ui->ShippingBox->clear();
+{     
     for(auto Element : List)
-        ui->ShippingBox->insertItem(-1, Element.first, Element.second);
+        if(ui->ShippingBox->findData(QVariant(Element.second)) == -1)
+            ui->ShippingBox->insertItem(-1, Element.first, Element.second);
 }
 
 void ZamowieniaDialog::onNewClientsNames(QList<QPair<QString, int> > List)
-{
-    ui->ClientBox->clear();
+{    
     for(auto Element : List)
-        ui->ClientBox->insertItem(-1, Element.first, Element.second);
+        if(ui->ClientBox->findData(QVariant(Element.second)) == -1)
+            ui->ClientBox->insertItem(-1, Element.first, Element.second);
+
 }
 
 void ZamowieniaDialog::onNewDiscount(int Rabat)
@@ -97,6 +98,9 @@ void ZamowieniaDialog::onPozycjaAdded(QStringList List)
         auto ModelIndex = ui->View->model()->index(Index, PozycjaColumns::Ilosc);
         int Count = ModelIndex.data().toInt()+List.at(PozycjaColumns::Ilosc).toInt();
         ui->View->model()->setData(ModelIndex, QVariant(Count));
+
+        ModelIndex = ui->View->model()->index(Index, PozycjaColumns::Koszt);
+        ui->View->model()->setData(ModelIndex, List.at(PozycjaColumns::Koszt).toDouble());
     }
     else
     {
@@ -119,6 +123,8 @@ void ZamowieniaDialog::onIndexChanged(const QItemSelection &newSelection, const 
 
 void ZamowieniaDialog::open()
 {
+    EditedOrder.clear();
+
     emit shippingOptionRequest();
     emit clientsNameRequest();
 
@@ -135,6 +141,21 @@ void ZamowieniaDialog::open()
     BaseDialog::open();
 }
 
+void ZamowieniaDialog::open(QList<QStringList> List, QMap<QString, QVariant> Zamowienie )
+{
+    EditedOrder = Zamowienie;
+
+    for(auto & Element: List)
+        onPozycjaAdded(Element);
+
+    setOrderFields(Zamowienie);
+
+    emit shippingOptionRequest();
+    emit clientsNameRequest();
+
+    BaseDialog::open();
+}
+
 void ZamowieniaDialog::accept()
 {
     QMap<QString, QVariant> Zamowienie;
@@ -142,16 +163,28 @@ void ZamowieniaDialog::accept()
 
     auto Model = ui->View->model();
 
-    Zamowienie.insert("IDKlienta", ui->ClientBox->currentData());
-    Zamowienie.insert("IDWysylki", ui->ShippingBox->currentData());
+    if(EditedOrder.isEmpty())
+    {
+        Zamowienie.insert("IDKlienta", QVariant());
+        Zamowienie.insert("IDWysylki", QVariant());
+
+    }
+    else
+        Zamowienie = EditedOrder;
+
+
+    Zamowienie["IDKlienta"] = ui->ClientBox->currentData();
+    Zamowienie["IDWysylki"] = ui->ShippingBox->currentData();
+
     Zamowienie.insert("Rabat", TotalRabat);
 
     Pozycje.insert("IDProduktu", QList<QVariant>());
     Pozycje.insert("Ilosc", QList<QVariant>());
     Pozycje.insert("KosztPozycji", QList<QVariant>());
 
+
     for(int x = 0; x<Model->rowCount(); ++x)
-    {        
+    {
         Pozycje["IDProduktu"].push_back(Model->index(x, PozycjaColumns::IDProduktu).data());
         Pozycje["Ilosc"].push_back(Model->index(x, PozycjaColumns::Ilosc).data());
         Pozycje["KosztPozycji"].push_back(Model->index(x, PozycjaColumns::Koszt).data());
@@ -162,10 +195,24 @@ void ZamowieniaDialog::accept()
     if(ui->View->model()->rowCount())
         ui->View->model()->removeRows(0, ui->View->model()->rowCount());
 
+    ui->ShippingBox->clear();
+    ui->ClientBox->clear();
+
     QDialog::accept();
 }
 
 void ZamowieniaDialog::onRefreshRequest()
 {
+
+}
+
+void ZamowieniaDialog::setOrderFields(QMap<QString, QVariant> OrderData)
+{
+    ui->ShippingBox->insertItem(-1, OrderData["SposobWysylki"].toString(), OrderData["IDWysylki"]);
+    ui->ClientBox->insertItem(-1, OrderData["Nazwa"].toString(), OrderData["IDKlienta"]);
+
+    ui->OrderDate->setText(QString("%1 %2").arg(StaticDataLabel, OrderData["DataZamowienia"].toDate().toString("dd-MM-yyyy")));
+
+    setWindowTitle(tr("Editing order number: ") + OrderData["IDZamowienia"].toString());
 
 }
