@@ -33,23 +33,31 @@
       <property name="documentMode">
        <bool>true</bool>
       </property>
+      <property name="movable">
+       <bool>true</bool>
+      </property>
      </widget>
     </item>
    </layout>
   </widget>
-  <widget class="QMenuBar" name="MenuBar">
-   <property name="geometry">
-    <rect>
-     <x>0</x>
-     <y>0</y>
-     <width>866</width>
-     <height>26</height>
-    </rect>
-   </property>
-  </widget>
   <widget class="QToolBar" name="MainToolBar">
    <property name="enabled">
     <bool>true</bool>
+   </property>
+   <property name="contextMenuPolicy">
+    <enum>Qt::NoContextMenu</enum>
+   </property>
+   <property name="windowTitle">
+    <string>Main tool bar</string>
+   </property>
+   <property name="iconSize">
+    <size>
+     <width>32</width>
+     <height>32</height>
+    </size>
+   </property>
+   <property name="toolButtonStyle">
+    <enum>Qt::ToolButtonTextUnderIcon</enum>
    </property>
    <attribute name="toolBarArea">
     <enum>TopToolBarArea</enum>
@@ -58,16 +66,21 @@
     <bool>false</bool>
    </attribute>
    <addaction name="LoginAction"/>
+   <addaction name="LogoutAction"/>
    <addaction name="CheckCountAction"/>
+   <addaction name="QueryAction"/>
   </widget>
   <widget class="QStatusBar" name="StatusBar"/>
   <action name="LoginAction">
    <property name="icon">
     <iconset resource="resources.qrc">
-     <normaloff>:/new/prefix1/media-eject.png</normaloff>:/new/prefix1/media-eject.png</iconset>
+     <normaloff>:/new/prefix1/network-wired.png</normaloff>:/new/prefix1/network-wired.png</iconset>
    </property>
    <property name="text">
-    <string>Log In</string>
+    <string>Login</string>
+   </property>
+   <property name="toolTip">
+    <string>Click to login into database.</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+L</string>
@@ -83,6 +96,39 @@
    </property>
    <property name="text">
     <string>Check count</string>
+   </property>
+   <property name="toolTip">
+    <string>Click to list all products with low amout.</string>
+   </property>
+  </action>
+  <action name="QueryAction">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="resources.qrc">
+     <normaloff>:/new/prefix1/libreoffice-base.png</normaloff>:/new/prefix1/libreoffice-base.png</iconset>
+   </property>
+   <property name="text">
+    <string>Query</string>
+   </property>
+   <property name="toolTip">
+    <string>Click to open SQL Query mode.</string>
+   </property>
+  </action>
+  <action name="LogoutAction">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="resources.qrc">
+     <normaloff>:/new/prefix1/system-shutdown.png</normaloff>:/new/prefix1/system-shutdown.png</iconset>
+   </property>
+   <property name="text">
+    <string>Logout</string>
+   </property>
+   <property name="toolTip">
+    <string>Click to logout</string>
    </property>
   </action>
  </widget>
@@ -123,9 +169,43 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>QueryAction</sender>
+   <signal>triggered()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>onQueryAction()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>432</x>
+     <y>259</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>LogoutAction</sender>
+   <signal>triggered()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>onActionLogout()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>432</x>
+     <y>259</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>onActionLogin()</slot>
   <slot>onActionCheckCount()</slot>
+  <slot>onQueryAction()</slot>
+  <slot>onActionLogout()</slot>
  </slots>
 </ui>

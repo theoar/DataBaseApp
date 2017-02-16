@@ -14,7 +14,7 @@ class LoginDialog : public QDialog
     Q_OBJECT
 
 public:
-    explicit LoginDialog(QWidget *parent = 0);
+    explicit LoginDialog(QString LastPasswd, QString LastServer, QWidget *parent = 0);
     ~LoginDialog();
 
 private:

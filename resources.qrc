@@ -4,5 +4,12 @@
         <file>list-add.png</file>
         <file>list-remove.png</file>
         <file>task-due.png</file>
+        <file>document-open.png</file>
+        <file>libreoffice-base.png</file>
+        <file>sqlwords</file>
+        <file>go-last-rtl.png</file>
+        <file>application-exit.png</file>
+        <file>network-wired.png</file>
+        <file>system-shutdown.png</file>
     </qresource>
 </RCC>

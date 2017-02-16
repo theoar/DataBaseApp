@@ -26,6 +26,26 @@ OutOfDialog::OutOfDialog(QStringList Header, QList<QStringList> Data, QWidget *p
 
 }
 
+OutOfDialog::OutOfDialog(QAbstractItemModel *M, QString LableHeader, QWidget *Parent) :
+    QDialog(Parent),
+    ui(new Ui::OutOfDialog)
+{
+    M->setParent(this);
+    ui->setupUi(this);
+    ui->TableWidget->setModel(M);
+    ui->TableWidget->setEditTriggers(0);
+
+    ui->TableWidget->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
+    ui->TableWidget->horizontalHeader()->setStretchLastSection(true);
+
+    ui->label->setText(LableHeader);
+    ui->TableWidget->hideColumn(0);
+
+    QSqlTableModel *Table = dynamic_cast<QSqlTableModel*>(M);
+    if(Table)
+        Table->select();
+}
+
 OutOfDialog::~OutOfDialog()
 {
     delete ui;

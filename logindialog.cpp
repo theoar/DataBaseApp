@@ -1,12 +1,15 @@
 #include "logindialog.h"
 #include "ui_logindialog.h"
 
-LoginDialog::LoginDialog(QWidget *parent) :
+LoginDialog::LoginDialog(QString LastPasswd, QString LastServer, QWidget *parent) :
 	QDialog(parent),
 	ui(new Ui::LoginDialog)
 {
 	ui->setupUi(this);
 	ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(false);
+
+    ui->ServerText->setText(LastServer);
+    ui->LoginText->setText(LastPasswd);
 }
 
 LoginDialog::~LoginDialog()

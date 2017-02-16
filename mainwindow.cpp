@@ -37,7 +37,7 @@ const QList<MainWindow::RELATIONAL> MainWindow::Relationals =
             tr("Mail"),
             tr("City"),
             tr("Street"),
-            tr("Home")
+            tr("Home number")
         }
     },
 
@@ -64,6 +64,55 @@ const QList<MainWindow::RELATIONAL> MainWindow::Relationals =
             tr("Magazin state"),
             tr("Capacity")
         }
+    },
+
+    {
+        "kategorie",
+        tr("Categories"),
+        false, true,
+        {
+            { 0, QSqlRelation() }
+        },
+        {
+            0
+        },
+        {
+            tr("IDKategorii"),
+            tr("Category")
+        }
+    },
+
+    {
+        "rabaty",
+        tr("Discounts"),
+        true, false,
+        {
+            { 0, QSqlRelation() }
+        },
+        {
+            0
+        },
+        {
+            tr("ID Dictount"),
+            tr("Discount [%]"),
+            tr("Minimal order amount [zł]")
+        }
+    },
+
+    {
+        "wysylka",
+        tr("Shipment"),
+        true, false,
+        {
+            { 0, QSqlRelation() }
+        },
+        {
+            0
+        },
+        {
+            tr("ID Shipment"),
+            tr("Shipment option")
+        }
     }
 
 };
@@ -76,7 +125,10 @@ MainWindow::MainWindow(QWidget *parent) :
 
     ui->MainTab->setVisible(false);
 
-    DataBase = QSqlDatabase::addDatabase("QMYSQL");
+    DataBase = QSqlDatabase::addDatabase("QMYSQL");    
+
+    QCoreApplication::setApplicationName("Storage");
+    Settings = new QSettings(this);
 }
 
 MainWindow::~MainWindow()
@@ -114,6 +166,10 @@ BaseDialog* MainWindow::getDialogByTable(const QString& Table)
 
         return Dialog;
     }
+
+    if( Table == "kategorie")
+        return new CategoryDialog();
+
 
     return nullptr;
 }
@@ -315,6 +371,9 @@ void MainWindow::onPayOrder(QVariant Key)
     Model.setFilter("IDZamowienia= "+ Key.toString());
     Model.select();
 
+    if(Model.index(0, Model.record().indexOf("CzyOplacone")).data().toBool())
+        QMessageBox::information(this, "Can not do that", "Can not pay paid order");
+
     for(int x = 0; x<Model.rowCount(); x++)
         Model.setData(Model.index(x, Model.record().indexOf("CzyOplacone")), QVariant(1));
 
@@ -394,6 +453,9 @@ void MainWindow::onDataRequest()
 
 void MainWindow::onLoggin(QString Server, QString User, QString Password)
 {
+    if(DataBase.open())
+        onActionLogout();
+
     DataBase.setDatabaseName("hurtownia");
     DataBase.setUserName(User);
     DataBase.setPassword(Password);
@@ -403,6 +465,13 @@ void MainWindow::onLoggin(QString Server, QString User, QString Password)
     {
         ui->LoginAction->setEnabled(false);
         ui->CheckCountAction->setEnabled(true);
+        ui->QueryAction->setEnabled(true);
+
+        Settings->setValue("server", Server );
+        Settings->setValue("login", User);        
+
+        ui->LogoutAction->setEnabled(true);
+        ui->StatusBar->showMessage(tr("Current user: %1 Server: %2").arg(User, Server));
     }
     else
     {
@@ -487,7 +556,7 @@ void MainWindow::onLoggin(QString Server, QString User, QString Password)
 
 void MainWindow::onActionLogin()
 {
-    LoginDialog *Login = new LoginDialog(this);
+    LoginDialog *Login = new LoginDialog(Settings->value("login").toString(), Settings->value("server").toString(), this);
 
     connect(Login, &LoginDialog::accepted, this, &MainWindow::onLoggin);
 
@@ -497,31 +566,54 @@ void MainWindow::onActionLogin()
     Login->open();
 }
 
-void MainWindow::onActionCheckCount()
+void MainWindow::onActionLogout()
 {
-    //    QSqlQuery Query(DataBase);
+    ui->MainTab->setVisible(false);
+    ui->QueryAction->setEnabled(false);
+    ui->LogoutAction->setEnabled(false);
+    ui->CheckCountAction->setEnabled(false);
 
-    //    Query.prepare("SELECT NazwaProduktu, Pojemnosc, StanMagazynu FROM produkty WHERE StanMagazynu<500");
+    while(ui->MainTab->count())
+        ui->MainTab->removeTab(0);
 
-    //    if(Query.exec() && Query.size()>0)
-    //    {
-    //        QStringList List;
+    for(auto Element : Models.values())
+        Element->deleteLater();
 
-    //        while(Query.next())
-    //        {
-    //            QStringList L;
-    //            qDebug() << Query.record().count();
-    //            for(int x; x<Query.record().count(); ++x)
-    //                L.push_back(Query.record().field(x).value().toString().append(' '));
+    for(auto Element : TabsWidgets.values())
+        Element->deleteLater();
 
-    //            List.push_back(L.join(','));
-    //        }
+    Models.clear();
+    TabsWidgets.clear();
 
-    //        QMessageBox::information(this, tr("Out of..."), List.join('\n'));
+    DataBase.close();
 
-    //    }
-    //    else
-    //        qDebug() << Query.lastError();
+    ui->LoginAction->setEnabled(true);
+    ui->StatusLable->show();
+    ui->StatusBar->clearMessage();
+}
+
+void MainWindow::onActionCheckCount()
+{        
+        QSqlRelationalTableModel *Model = new QSqlRelationalTableModel(nullptr, DataBase);
+        auto Relation = Relationals[RELATIONALMAP::PRODUCTS];
+        Model->setTable(Relation.Table);
+        Model->setFilter("StanMagazynu<="+QString::number(MagazynRaport));
+        Model->setRelation(Relation.Relations.first().first, Relation.Relations.first().second);
+
+        QDialog *Dialog = new OutOfDialog(Model, tr("These product are almost of out:"), this);
+        connect(Dialog, &QDialog::accepted, Dialog, &QDialog::deleteLater);
+        connect(Dialog, &QDialog::rejected, Dialog, &QDialog::deleteLater);
+
+        Dialog->open();
+}
+
+void MainWindow::onQueryAction()
+{
+    QDialog *Dialog = new QueryDialog(DataBase, this);
+    connect(Dialog, &QDialog::accepted, Dialog, &QDialog::deleteLater);
+    connect(Dialog, &QDialog::rejected, Dialog, &QDialog::deleteLater);
+
+    Dialog->open();
 }
 
 QSqlTableModel* MainWindow::createPozycjaModel()

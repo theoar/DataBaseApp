@@ -25,7 +25,10 @@ SOURCES += main.cpp\
     products.cpp \
     pozycjadialog.cpp \
     outofdialog.cpp \
-    detailsdialog.cpp
+    detailsdialog.cpp \
+    querydialog.cpp \
+    klhighlighter.cpp \
+    categorydialog.cpp
 
 HEADERS  += mainwindow.h \
     logindialog.h \
@@ -38,7 +41,10 @@ HEADERS  += mainwindow.h \
     products.h \
     pozycjadialog.h \
     outofdialog.h \
-    detailsdialog.h
+    detailsdialog.h \
+    querydialog.h \
+    klhighlighter.hpp \
+    categorydialog.h
 
 FORMS    += mainwindow.ui \
     logindialog.ui \
@@ -48,7 +54,9 @@ FORMS    += mainwindow.ui \
     zamowieniadialog.ui \
     pozycjadialog.ui \
     outofdialog.ui \
-    detailsdialog.ui
+    detailsdialog.ui \
+    querydialog.ui \
+    categorydialog.ui
 
 RESOURCES += \
     resources.qrc

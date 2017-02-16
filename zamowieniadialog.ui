@@ -15,10 +15,18 @@
   </property>
   <layout class="QGridLayout" name="gridLayout">
    <item row="0" column="1" colspan="4">
-    <widget class="QComboBox" name="ClientBox"/>
+    <widget class="QComboBox" name="ClientBox">
+     <property name="toolTip">
+      <string>Select client.</string>
+     </property>
+    </widget>
    </item>
    <item row="1" column="1" colspan="4">
-    <widget class="QComboBox" name="ShippingBox"/>
+    <widget class="QComboBox" name="ShippingBox">
+     <property name="toolTip">
+      <string>Select shipment</string>
+     </property>
+    </widget>
    </item>
    <item row="3" column="0">
     <widget class="QLabel" name="OrderDate">
@@ -40,7 +48,7 @@
    <item row="1" column="0">
     <widget class="QLabel" name="ShippingLabel">
      <property name="text">
-      <string>Shipping</string>
+      <string>Shipment</string>
      </property>
     </widget>
    </item>
@@ -63,8 +71,8 @@
    </item>
    <item row="3" column="4">
     <widget class="QToolButton" name="AddButton">
-     <property name="text">
-      <string>...</string>
+     <property name="toolTip">
+      <string>Click to add product to order.</string>
      </property>
      <property name="icon">
       <iconset resource="resources.qrc">
@@ -77,8 +85,8 @@
      <property name="enabled">
       <bool>false</bool>
      </property>
-     <property name="text">
-      <string>...</string>
+     <property name="toolTip">
+      <string>Click to remove product from order list.</string>
      </property>
      <property name="icon">
       <iconset resource="resources.qrc">

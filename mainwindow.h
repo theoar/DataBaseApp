@@ -16,15 +16,17 @@
 #include <QSqlRecord>
 #include <QSqlField>
 #include <QSqlRelation>
+#include <QSettings>
 
 #include "logindialog.h"
 #include "klientdialog.h"
 #include "tabwidget.h"
 #include "produktydialog.h"
 #include "zamowieniadialog.h"
-
+#include "querydialog.h"
 #include "outofdialog.h"
 #include "detailsdialog.h"
+#include "categorydialog.h"
 
 #define PRODUKTY 1
 
@@ -79,6 +81,9 @@ private:
 
     QMap<QString, TabWidget*> TabsWidgets;
     QMap<QString, QSqlQueryModel*> Models;
+    int MagazynRaport = 500;
+
+    QSettings *Settings;
 
 private slots:
 
@@ -95,11 +100,12 @@ private slots:
 
     void onDataRequest(void); //TO DO
 
-    void onLoggin(QString Server, QString User, QString Password);
+    void onLoggin(QString Server, QString User, QString Password);    
 
     void onActionLogin(void);
+    void onActionLogout(void);
     void onActionCheckCount(void);
-
+    void onQueryAction(void);
 
 signals:
 

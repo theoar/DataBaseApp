@@ -6,6 +6,8 @@
 #include <QTableWidget>
 #include <QList>
 #include <QStringList>
+#include <QSqlTableModel>
+#include <QDebug>
 
 namespace Ui {
 class OutOfDialog;
@@ -17,10 +19,11 @@ class OutOfDialog : public QDialog
 
 public:
     explicit OutOfDialog(QStringList Header, QList<QStringList> Data, QWidget *parent = 0);
+    explicit OutOfDialog(QAbstractItemModel* M, QString LableHeader = QString(), QWidget *Parent = 0);
     ~OutOfDialog();
 
 private:
     Ui::OutOfDialog *ui;
 };
 
-#endif // OUTOFDIALOG_H
+#endif //OUTOFDIALOG_H

@@ -6,6 +6,7 @@ ProduktyDialog::ProduktyDialog(QWidget *parent) :
     ui(new Ui::ProduktyDialog)
 {
     ui->setupUi(this);
+    ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(false);
 }
 
 ProduktyDialog::~ProduktyDialog()

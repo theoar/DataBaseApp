@@ -40,7 +40,11 @@
     </widget>
    </item>
    <item row="1" column="0">
-    <widget class="QComboBox" name="FilterBox"/>
+    <widget class="QComboBox" name="FilterBox">
+     <property name="toolTip">
+      <string>Select filter field.</string>
+     </property>
+    </widget>
    </item>
    <item row="1" column="1">
     <widget class="QLineEdit" name="SearchField">
@@ -56,6 +60,9 @@
     <layout class="QHBoxLayout" name="horizontalLayout">
      <item>
       <widget class="QToolButton" name="DeleteButton">
+       <property name="toolTip">
+        <string>Click to delete selected row.</string>
+       </property>
        <property name="text">
         <string>Remove</string>
        </property>
@@ -67,6 +74,9 @@
      </item>
      <item>
       <widget class="QToolButton" name="AddButton">
+       <property name="toolTip">
+        <string>Click to add row.</string>
+       </property>
        <property name="text">
         <string>Add</string>
        </property>

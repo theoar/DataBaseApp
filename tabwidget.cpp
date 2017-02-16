@@ -138,7 +138,7 @@ void TabWidget::hideSearchBar()
 void TabWidget::hideStandardButtons()
 {
     ui->AddButton->hide();
-    ui->DeleteButton->hide();
+    ui->DeleteButton->hide();    
 }
 
 int TabWidget::getCurrentSelectedPK()
@@ -179,9 +179,12 @@ void TabWidget::onDeleteButton()
 
 		if(Reply == QMessageBox::StandardButton::Yes)
 		{
-			Model->removeRow(Index.row());
+            if( !Model->removeRow(Index.row()) )
+                QMessageBox::warning(this, tr("Can not delete record"), tr("This record is in relation with other table"));
 
 			ui->View->setCurrentIndex(QModelIndex());
+
+            onRefresh();
 		}
 	}
 	else
@@ -285,4 +288,6 @@ void TabWidget::onRefresh()
 {
     if(QSqlTableModel *M = dynamic_cast<QSqlTableModel*>(Model))
         M->select();
+
+    onSearchChanged();
 }
