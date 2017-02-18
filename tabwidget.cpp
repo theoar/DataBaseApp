@@ -10,6 +10,9 @@ TabWidget::TabWidget(BaseDialog *Dial, QSqlQueryModel * M, QWidget *parent) :
 
 	ui->setupUi(this);
 
+    ButtonDistabler.push_back(ui->DeleteButton);
+    ui->DeleteButton->setDisabled(true);
+
     auto Ss = ui->View->selectionModel();
     auto Mm = ui->View->model();
 
@@ -44,6 +47,14 @@ TabWidget::TabWidget(BaseDialog *Dial, QSqlQueryModel * M, QWidget *parent) :
 	connect(Model, &QSqlQueryModel::dataChanged, this, &TabWidget::onSearchChanged);
 	connect(Model, &QSqlQueryModel::layoutChanged, this, &TabWidget::onSearchChanged);
 	connect(ui->View->horizontalHeader(), &QHeaderView::sectionClicked, this, &TabWidget::onSearchChanged);
+
+    connect(ui->View->selectionModel(), &QItemSelectionModel::selectionChanged, this, &TabWidget::onSelectionChagned);
+    connect(ui->View->horizontalHeader(), &QHeaderView::sectionClicked, [this](void)-> void {
+        for(QAbstractButton* Button : this->ButtonDistabler)
+            Button->setDisabled(true);
+        emit propetSelection(false);
+    });
+
 }
 
 TabWidget::~TabWidget()
@@ -101,18 +112,21 @@ QTableView *TabWidget::getView()
 }
 
 void TabWidget::addPayButton()
-{
+{    
     QPushButton* Pay = new QPushButton(tr("Pay"), this);
     ui->horizontalLayout->insertWidget(ui->horizontalLayout->indexOf(ui->AddButton),Pay);
     connect(Pay, &QPushButton::clicked, this, &TabWidget::onPayClicked);
+    Pay->setDisabled(true);
+    ButtonDistabler.push_back(Pay);
 }
 
 void TabWidget::addCompleteButton()
 {
-
     QPushButton* Complete = new QPushButton(tr("Complete order"), this);
     ui->horizontalLayout->insertWidget(ui->horizontalLayout->indexOf(ui->AddButton),Complete);
     connect(Complete, &QPushButton::clicked, this, &TabWidget::onCompleteClicked);
+    Complete->setDisabled(true);
+    ButtonDistabler.push_back(Complete);
 }
 
 void TabWidget::addDetailsButton()
@@ -120,6 +134,8 @@ void TabWidget::addDetailsButton()
     QPushButton* Details = new QPushButton(tr("Details"), this);
     ui->horizontalLayout->insertWidget(ui->horizontalLayout->indexOf(ui->AddButton),Details);
     connect(Details, &QPushButton::clicked, this, &TabWidget::onDetailsClicked);
+    Details->setDisabled(true);
+    ButtonDistabler.push_back(Details);
 }
 
 void TabWidget::addEditButton()
@@ -127,6 +143,8 @@ void TabWidget::addEditButton()
     QPushButton* Edit = new QPushButton(tr("Edit"), this);
     ui->horizontalLayout->insertWidget(ui->horizontalLayout->indexOf(ui->AddButton),Edit);
     connect(Edit, &QPushButton::clicked, this, &TabWidget::onEditClicked);
+    Edit->setDisabled(true);
+    ButtonDistabler.push_back(Edit);
 }
 
 void TabWidget::hideSearchBar()
@@ -163,6 +181,15 @@ void TabWidget::setDialog(BaseDialog *value)
     Dialog = value;
 }
 
+void TabWidget::onSelectionChagned(const QItemSelection &newSelection, const QItemSelection &oldSelection)
+{
+    bool TurnOn = !newSelection.isEmpty();
+
+    for(QAbstractButton * X : ButtonDistabler)
+        X->setEnabled(TurnOn);
+
+    emit propetSelection(TurnOn);
+}
 
 
 void TabWidget::onAddButton()
@@ -172,8 +199,8 @@ void TabWidget::onAddButton()
 
 void TabWidget::onDeleteButton()
 {
-    auto Index  = ui->View->selectionModel()->currentIndex();
-	if(Index.isValid())
+    auto Index  = ui->View->selectionModel()->currentIndex();    
+    if(!ui->View->selectionModel()->selection().isEmpty())
 	{
 		QMessageBox::StandardButton Reply = QMessageBox::question(this, tr("Delete record"), tr("Do you want to delete selected row"), QMessageBox::Yes|QMessageBox::No);
 

@@ -110,6 +110,13 @@
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>ClientBox</tabstop>
+  <tabstop>ShippingBox</tabstop>
+  <tabstop>View</tabstop>
+  <tabstop>RemoveButton</tabstop>
+  <tabstop>AddButton</tabstop>
+ </tabstops>
  <resources>
   <include location="resources.qrc"/>
  </resources>

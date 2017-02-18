@@ -1,0 +1,167 @@
+<html>
+    <head>
+        <style>
+            body{
+                margin: 0 auto;
+            }
+            #klient, #zamowienie, #produkty{
+                border: 1px solid gray;
+                margin-top: 5px;
+                margin-bottom: 5px;
+                margin-left: 5px;
+                margin-right: 5px;
+                padding: 5px;
+            }
+            
+            #produkty table tr:nth-last-child(-n+3) td{
+                border: none;
+                background-color: white;
+                text-align: right;
+            }
+            
+            h3{                
+                margin:  5px 5px;
+            }
+            
+            li{
+                padding: 2px;
+            }
+            
+            #produkty table{
+                border-collapse: collapse;
+                width: 100%;
+            }
+            
+            #produkty td, #produkty th{
+                border: 1px solid black;
+                text-align: center;                
+            }          
+           
+            
+            #produkty tr:nth-child(even){
+                background-color: gray;
+            }
+            
+            #klient table, #zamowienie table{
+                margin-left: 10px;
+                margin-bottom: 10px;               
+                text-align: left;
+                text-decoration: none;
+            }
+            
+            #klient th, #zamowienie th, #klient td, #zamowienie td {
+                border-collapse:  collapse;
+                border-bottom: 1px solid black;
+            }
+            
+            #podpis{
+                text-align: right;
+                margin-left: 5px;
+                margin-right: 50px;
+                margin-top: 100px;
+                margin-bottom: 5px;                
+            }
+            
+            h6{
+                margin: 0
+            }
+            
+        </style>
+    </head>
+    <body>
+        <div id=klient>
+            <h3>Dane klienta:</h3>
+            <table>
+                <tr>
+                    <th>Klient:</th>
+                    <td>!--KLIENT--!</td>
+                </tr>
+                <tr>
+                    <th>Telefon:</th>
+                    <td>!--TELEFON--!</td>
+                </tr>
+                <tr>
+                    <th>E-Mail:</th>
+                    <td>!--EMAIL--!</td>
+                </tr>
+                <tr>
+                    <th>Miasto:</th>
+                    <td>!--MIASTO--!</td>
+                </tr>
+                <tr>
+                    <th>Ulica:</th>
+                    <td>!--ULICA--!</td>
+                </tr>
+                 <tr>
+                    <th>Numer domu:</th>
+                    <td>!--DOM--!</td>
+                </tr>  
+            </table>
+        </div>
+        
+        <div id=zamowienie>
+            <h3>Dane zamowienia:</h3>
+           <table>
+                <tr>
+                    <th>Data zamówienia: </th>
+                    <td>!--DATAZAMOWIENIA--!</td>
+               </tr>
+                <tr>
+                    <th>Data realizacji: </th>
+                    <td>!--DATAREALIZACJI--!</td>
+               </tr>
+                <tr>
+                    <th>Kwota zamówienia: </th>
+                    <td>!--RSUMA--! zł</td>
+               </tr>
+                <tr>
+                    <th>Przyznany rabat: </th>
+		    <td>!--RABAT--! zł</td>
+               </tr>
+                <tr>
+                    <th>Sposób dostawy: </th>
+                    <td>!--DOSTAWA--!</td>
+               </tr>
+                 <tr>
+                    <th>Numer zamówienia: </th>
+                    <td>!--IDZAMOWIENIA--!</td>
+               </tr>
+           </table>
+        </div>
+        
+        <div id=produkty>
+            <h3>Lista zamówionych przedmiotów:</h3>
+            <table>
+                <tr>
+                    <th>Pozycja</th>
+                    <th>Ilość</th>
+		    <th>Cena jednostkowa [zł]</th>
+		    <th>Koszt pozycji [zł]</th>
+                </tr>
+                !--POZYCJE--!
+                  <tr>
+                    <td></td>
+                    <td></td>
+                    <td>Suma bez rabatu</td>
+		    <td>!--SUMA--! zł</td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td></td>
+                    <td>Rabat:</td>
+		    <td>!--RABAT--! zł</td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td></td>
+                    <td>Suma:</td>
+		    <td>!--RSUMA--! zł</td>
+                </tr>
+            </table>            
+        </div>
+        <div id=podpis>
+            ................................</br>
+            <h6>(Podpis osoby realizującej)</h6>
+        </div>
+    </body>
+</html>

@@ -124,15 +124,28 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->setupUi(this);
 
     ui->MainTab->setVisible(false);
+    connect(ui->MainTab, &QTabWidget::currentChanged, [this](int Index)->void{
+        if(TabsWidgets.value("zamowienia") == ui->MainTab->widget(Index))
+            ui->PrintAction->setEnabled(!TabsWidgets.value("zamowienia")->getView()->selectionModel()->selection().isEmpty());
+        else
+            ui->PrintAction->setDisabled(true);
+    });
 
     DataBase = QSqlDatabase::addDatabase("QMYSQL");    
 
     QCoreApplication::setApplicationName("Storage");
     Settings = new QSettings(this);
+
+    WebView = new QWebView(this);
+    WebView->hide();
+
+    Printer = new QPrinter();
+    Printer->setOutputFormat(QPrinter::NativeFormat);
 }
 
 MainWindow::~MainWindow()
 {
+    delete Printer;
     delete ui;
 }
 
@@ -395,7 +408,7 @@ void MainWindow::onDetails(QMap<QString, QVariant> Map)
     connect(Dialog, &QDialog::accepted, Dialog, &QDialog::deleteLater);
     connect(Dialog, &QDialog::rejected, Dialog, &QDialog::deleteLater);
 
-    Dialog->open();
+    Dialog->show();
 }
 
 void MainWindow::onOrderDataRequest(int PK)
@@ -443,6 +456,16 @@ void MainWindow::onOrderDataRequest(int PK)
 void MainWindow::onEdit()
 {
 
+}
+
+void MainWindow::onSuccesedQuery()
+{
+    for(QSqlQueryModel* X : Models.values())
+    {
+        QSqlTableModel* Casted;
+        if((Casted = dynamic_cast<QSqlTableModel*>(X)))
+            Casted->select();
+    }
 }
 
 
@@ -501,7 +524,7 @@ void MainWindow::onLoggin(QString Server, QString User, QString Password)
 
         TabWidget* W = new TabWidget(getDialogByTable(Table.Table), M, this);
 
-        connect(this, &MainWindow::requestRefresh, W, &TabWidget::onRefresh);
+        connect(this, &MainWindow::requestRefresh, W, &TabWidget::onRefresh);        
 
         W->setDelegate(new QSqlRelationalDelegate(W));
         W->setReadonly(Table.Readonly);
@@ -534,11 +557,11 @@ void MainWindow::onLoggin(QString Server, QString User, QString Password)
         connect(W, &TabWidget::complete, this, &MainWindow::onCompleteOrder);
         connect(W, &TabWidget::details, this, &MainWindow::onDetails);
         connect(W, &TabWidget::requestOrderData, this, &MainWindow::onOrderDataRequest);
+        connect(W, &TabWidget::propetSelection, ui->PrintAction, &QAction::setEnabled);
 
 
         W->setReadonly(true);
         W->setDeleteable(false);
-
 
         ui->MainTab->addTab(W, tr("Orders"));
 
@@ -547,7 +570,8 @@ void MainWindow::onLoggin(QString Server, QString User, QString Password)
 
         M = new QSqlTableModel(this, DataBase);
         M->setTable("pozycje_view");
-        Models.insert("pozycje_view", M);
+        Models.insert("pozycje_view", M);        
+
     }
     ui->StatusLable->hide();
     ui->MainTab->show();
@@ -612,9 +636,116 @@ void MainWindow::onQueryAction()
     QDialog *Dialog = new QueryDialog(DataBase, this);
     connect(Dialog, &QDialog::accepted, Dialog, &QDialog::deleteLater);
     connect(Dialog, &QDialog::rejected, Dialog, &QDialog::deleteLater);
+    connect(dynamic_cast<QueryDialog*>(Dialog), &QueryDialog::queryExecuted, this, &MainWindow::onSuccesedQuery);
 
-    Dialog->open();
+    Dialog->show();
 }
+
+void MainWindow::onActionPrint()
+{
+    auto Widok = TabsWidgets["zamowienia"];
+
+    QVariant PK = Widok->getCurrentSelectedPK();
+    QSqlQuery ZamowienieQuery(" SELECT *"
+                              " FROM zamowienia z"
+                              " INNER JOIN klienci k ON k.IDKlienta=z.IDKlienta"
+                              " INNER JOIN wysylka ON z.IDWysylki=wysylka.IDWysylki"
+                              " WHERE z.IDZamowienia="+PK.toString(), DataBase);    
+
+    if(!ZamowienieQuery.size())
+        return;
+
+    QSqlQuery Pozycje(" SELECT CONCAT(NazwaProduktu, ', ', Pojemnosc, ' l'),"
+                      " Ilosc, ROUND(KosztPozycji, 2), ROUND(Ilosc*KosztPozycji, 2) FROM produkty p"
+                      " INNER JOIN pozycja pz ON pz.IDProduktu=p.IDProduktu"
+                      " WHERE pz.IDZamowienia="+PK.toString(), DataBase);
+
+    QSqlQuery Kwoty(" SELECT ROUND(SUM(Ilosc*KosztPozycji), 2) AS Suma,"
+                    " ROUND(SUM(Ilosc*KosztPozycji)*(1-Rabat/100),2) AS Rsuma,"
+                    " ROUND(SUM(Ilosc*KosztPozycji)*Rabat/100, 2) AS Rabat"
+                    " FROM pozycja p"
+                    " INNER JOIN zamowienia z ON p.IDZamowienia=z.IDzamowienia"
+                    " WHERE p.IDZamowienia="+PK.toString(), DataBase);
+
+    QList<QSqlQuery *> Queries;
+    Queries.append(&ZamowienieQuery);
+    Queries.append(&Pozycje);
+    Queries.append(&Kwoty);
+
+
+    QMap<QString, QVariant> KlientMap;
+    QMap<QString, QVariant> ZamowienieMap;
+    QList<QStringList> PozycjeMap;
+
+    ZamowienieQuery.next();
+    Kwoty.next();
+    QSqlRecord Record = ZamowienieQuery.record();
+    KlientMap.insert("!--KLIENT--!", Record.value("Nazwa"));
+    KlientMap.insert("!--TELEFON--!", Record.value("Telefon"));
+    KlientMap.insert("!--EMAIL--!", Record.value("Mail"));
+    KlientMap.insert("!--MIASTO--!", Record.value("Miasto"));
+    KlientMap.insert("!--ULICA--!", Record.value("Ulica"));
+    KlientMap.insert("!--DOM--!", Record.value("NumerDomu"));
+
+    ZamowienieMap.insert("!--DATAZAMOWIENIA--!", Record.value("DataZamowienia"));
+    ZamowienieMap.insert("!--DATAREALIZACJI--!", Record.value("DataRealizacji"));
+    ZamowienieMap.insert("!--DOSTAWA--!", Record.value("SposobWysylki"));
+    ZamowienieMap.insert("!--IDZAMOWIENIA--!", Record.value("IDZamowienia"));
+
+    Record = Kwoty.record();
+    ZamowienieMap.insert("!--SUMA--!", QString::number(Record.value("Suma").toDouble(), 'f', 2));
+    ZamowienieMap.insert("!--RSUMA--!", QString::number(Record.value("Rsuma").toDouble(), 'f', 2));
+    ZamowienieMap.insert("!--RABAT--!", QString::number(Record.value("Rabat").toDouble(), 'f', 2));
+
+    while(Pozycje.next())
+    {
+        PozycjeMap.append(QStringList());
+        for(int x = 0; x<Pozycje.record().count()/2; ++x)
+            PozycjeMap.last().append(Pozycje.value(x).toString());
+        for(int x = Pozycje.record().count()/2; x<Pozycje.record().count(); ++x)
+            PozycjeMap.last().append(QString::number(Pozycje.value(x).toDouble(), 'f', 2));
+    }
+
+    QFile File(":/new/prefix1/print.html");
+
+    if(!File.open(QFile::ReadOnly))
+        return;
+
+    QTextStream Stream(&File);
+    HtmlPrint = Stream.readAll();
+
+    for(auto X : KlientMap.keys())
+        HtmlPrint.replace(X, KlientMap[X].toString());
+
+    for(auto X : ZamowienieMap.keys())
+        HtmlPrint.replace(X, ZamowienieMap[X].toString());
+
+    QString Table;
+    for(auto X : PozycjeMap)
+    {
+        Table+="<tr>";
+        for(auto Y : X)
+            Table += "<td>"+Y+"</td>";
+        Table+="</tr>";
+    }
+
+    HtmlPrint.replace("!--POZYCJE--!", Table);
+
+    QPrintPreviewDialog *Previev = new QPrintPreviewDialog(Printer, this);
+    connect(Previev, &QPrintPreviewDialog::paintRequested, [this](void) -> void{
+        WebView->setHtml(HtmlPrint);
+        WebView->print(Printer);
+    });
+
+    connect(Previev, &QPrintPreviewDialog::accepted, Previev, &QPrintPreviewDialog::deleteLater);
+    connect(Previev, &QPrintPreviewDialog::reject, Previev, &QPrintPreviewDialog::deleteLater);
+
+    Previev->open();
+
+
+    return;
+}
+
 
 QSqlTableModel* MainWindow::createPozycjaModel()
 {

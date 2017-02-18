@@ -34,6 +34,7 @@ public slots:
     void onCountChanged(int Value);    
 
     virtual void accept();
+    virtual void open();
 };
 
 #endif // POZYCJADIALOG_H

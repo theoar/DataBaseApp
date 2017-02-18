@@ -18,6 +18,22 @@ QueryDialog::QueryDialog(QSqlDatabase & Db, QWidget *parent) :
     ui->View->hide();
 
     ui->LastQueryButton->setEnabled(false);
+    ui->EditBox->setFocus();
+
+    qDebug() << ButtonNames.size() << ButtonNames.length();
+
+    //qDebug() << ButtonNames.size();
+    QBoxLayout * Layout = ui->horizontalLayout;
+    for(int x = ButtonNames.size()-1; x>=0; --x )
+    {
+        QPushButton *Button = new QPushButton(ButtonNames[x],this);
+        Layout->insertWidget(1, Button);
+        connect(Button, &QPushButton::clicked, [this, x](void) -> void{
+            ui->EditBox->clear();
+            ui->EditBox->setPlainText(Hints[x]);
+            ui->EditBox->setFocus();
+        });
+    }
 
 }
 
@@ -49,6 +65,11 @@ void QueryDialog::onSendQuery()
         ui->ResponseLabel->setText(LableText+tr("Affected: %1 row(s)").arg(QString::number(Model->rowCount())));
         if(Model->rowCount())
             ui->View->show();
+
+        QRegExp RegExp("INSERT|UPDATE|DELETE");
+        RegExp.setCaseSensitivity(Qt::CaseInsensitive);
+        if(Model->query().lastQuery().contains(RegExp))
+            emit queryExecuted();
     }
 
     ui->EditBox->setFocus();

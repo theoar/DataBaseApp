@@ -17,6 +17,9 @@
 #include <QSqlField>
 #include <QSqlRelation>
 #include <QSettings>
+#include <QtWebKitWidgets/QWebView>
+#include <QPrinter>
+#include <QPrintPreviewDialog>
 
 #include "logindialog.h"
 #include "klientdialog.h"
@@ -72,6 +75,8 @@ private:
     Ui::MainWindow *ui;
     LoginDialog *Login;
     QSqlDatabase DataBase;
+    QPrinter *Printer;
+    QWebView *WebView;
 
     QString UserName;
 
@@ -85,6 +90,8 @@ private:
 
     QSettings *Settings;
 
+    QString HtmlPrint;
+
 private slots:
 
     void onCategoriesRequest(void);
@@ -97,6 +104,7 @@ private slots:
     void onDetails(QMap<QString, QVariant> Map);
     void onOrderDataRequest(int PK);
     void onEdit();
+    void onSuccesedQuery(void);
 
     void onDataRequest(void); //TO DO
 
@@ -106,6 +114,7 @@ private slots:
     void onActionLogout(void);
     void onActionCheckCount(void);
     void onQueryAction(void);
+    void onActionPrint(void);    
 
 signals:
 

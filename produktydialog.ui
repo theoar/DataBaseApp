@@ -30,6 +30,9 @@
    </item>
    <item row="4" column="2">
     <widget class="QDoubleSpinBox" name="PojemnoscEdit">
+     <property name="suffix">
+      <string> l</string>
+     </property>
      <property name="minimum">
       <double>0.010000000000000</double>
      </property>
@@ -70,6 +73,12 @@
    </item>
    <item row="2" column="2">
     <widget class="QDoubleSpinBox" name="CenaEdit">
+     <property name="specialValueText">
+      <string/>
+     </property>
+     <property name="suffix">
+      <string> zł</string>
+     </property>
      <property name="minimum">
       <double>0.010000000000000</double>
      </property>
@@ -107,6 +116,13 @@
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>KategoriaBox</tabstop>
+  <tabstop>NazwaEdit</tabstop>
+  <tabstop>CenaEdit</tabstop>
+  <tabstop>MagazynEdit</tabstop>
+  <tabstop>PojemnoscEdit</tabstop>
+ </tabstops>
  <resources/>
  <connections>
   <connection>

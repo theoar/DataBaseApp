@@ -45,7 +45,7 @@
     <bool>true</bool>
    </property>
    <property name="contextMenuPolicy">
-    <enum>Qt::NoContextMenu</enum>
+    <enum>Qt::PreventContextMenu</enum>
    </property>
    <property name="windowTitle">
     <string>Main tool bar</string>
@@ -69,6 +69,7 @@
    <addaction name="LogoutAction"/>
    <addaction name="CheckCountAction"/>
    <addaction name="QueryAction"/>
+   <addaction name="PrintAction"/>
   </widget>
   <widget class="QStatusBar" name="StatusBar"/>
   <action name="LoginAction">
@@ -129,6 +130,21 @@
    </property>
    <property name="toolTip">
     <string>Click to logout</string>
+   </property>
+  </action>
+  <action name="PrintAction">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="resources.qrc">
+     <normaloff>:/new/prefix1/document-print.png</normaloff>:/new/prefix1/document-print.png</iconset>
+   </property>
+   <property name="text">
+    <string>Print</string>
+   </property>
+   <property name="toolTip">
+    <string>Select order to print deatils</string>
    </property>
   </action>
  </widget>
@@ -201,11 +217,28 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>PrintAction</sender>
+   <signal>triggered()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>onActionPrint()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>432</x>
+     <y>259</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>onActionLogin()</slot>
   <slot>onActionCheckCount()</slot>
   <slot>onQueryAction()</slot>
   <slot>onActionLogout()</slot>
+  <slot>onActionPrint()</slot>
  </slots>
 </ui>

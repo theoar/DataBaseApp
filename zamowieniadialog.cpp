@@ -76,7 +76,7 @@ void ZamowieniaDialog::onNewDiscount(int Rabat)
 }
 
 void ZamowieniaDialog::onAddPozycja()
-{
+{    
     Dialog->open();
 }
 

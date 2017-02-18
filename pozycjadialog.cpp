@@ -92,3 +92,12 @@ void PozycjaDialog::accept()
     emit accepted(List);
     QDialog::accept();
 }
+
+void PozycjaDialog::open()
+{
+    QSqlTableModel* M = dynamic_cast<QSqlTableModel*>(TableWidget->getModel());
+    if(M)
+        M->select();
+
+    QDialog::open();
+}

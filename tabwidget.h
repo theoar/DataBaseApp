@@ -45,7 +45,7 @@ public:
     void addPayButton();
     void addCompleteButton();
     void addDetailsButton();
-    void addEditButton();
+    void addEditButton();    
 
     void hideSearchBar();
     void hideStandardButtons();
@@ -59,6 +59,9 @@ private:
     Ui::TabWidget *ui;
     BaseDialog *Dialog;
     QSqlQueryModel *Model;
+    QList<QAbstractButton*> ButtonDistabler;
+
+    void onSelectionChagned(const QItemSelection &newSelection, const QItemSelection &oldSelection);
 
 public slots:
     void onRefresh();
@@ -73,7 +76,7 @@ private slots:
     void onPayClicked();
     void onCompleteClicked();
     void onDetailsClicked();
-    void onEditClicked();
+    void onEditClicked();    
 
 signals:
     void pay(QVariant Key);
@@ -81,6 +84,7 @@ signals:
     void details(QMap<QString, QVariant>);
     void requestOrderData(int PK);
     void edit(int PK);
+    void propetSelection(bool);
 
 };
 
