@@ -501,12 +501,6 @@
         <translation>Wyślij zapytanie</translation>
     </message>
     <message>
-        <location filename="querydialog.cpp" line="65"/>
-        <source>ASHJDOASHJDOASUHDASD Affected: %n row(s)</source>
-        <oldsource>Affected: %n row(s)</oldsource>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <location filename="querydialog.h" line="29"/>
         <source>Sql server response: </source>
         <translation>Odpowiedź serwera SQL:</translation>
@@ -515,6 +509,15 @@
         <location filename="querydialog.h" line="35"/>
         <source>Clear</source>
         <translation>Wyczyść</translation>
+    </message>
+    <message numerus="yes">
+        <location filename="querydialog.cpp" line="65"/>
+        <source>Affected: %n row(s)</source>
+        <translation type="unfinished">
+            <numerusform></numerusform>
+            <numerusform></numerusform>
+            <numerusform></numerusform>
+        </translation>
     </message>
 </context>
 <context>
