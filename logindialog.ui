@@ -17,7 +17,7 @@
    <item row="1" column="0">
     <widget class="QLabel" name="LoginLable">
      <property name="text">
-      <string>Login</string>
+      <string>Login:</string>
      </property>
     </widget>
    </item>
@@ -26,15 +26,12 @@
      <property name="toolTip">
       <string>Enter login here.</string>
      </property>
-     <property name="text">
-      <string>root</string>
-     </property>
     </widget>
    </item>
    <item row="2" column="0">
     <widget class="QLabel" name="PasswordLable">
      <property name="text">
-      <string>Password</string>
+      <string>Password:</string>
      </property>
     </widget>
    </item>
@@ -71,7 +68,7 @@
    <item row="0" column="0">
     <widget class="QLabel" name="ServerLable">
      <property name="text">
-      <string>Server</string>
+      <string>Server:</string>
      </property>
     </widget>
    </item>
@@ -79,9 +76,6 @@
     <widget class="QLineEdit" name="ServerText">
      <property name="toolTip">
       <string>Adress of database server.</string>
-     </property>
-     <property name="text">
-      <string>localhost</string>
      </property>
     </widget>
    </item>

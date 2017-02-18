@@ -12,6 +12,8 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 TARGET = hurtownia1
 TEMPLATE = app
 
+TRANSLATIONS += hurtownia1_pl.ts
+
 
 SOURCES += main.cpp\
         mainwindow.cpp \

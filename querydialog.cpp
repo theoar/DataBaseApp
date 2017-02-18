@@ -62,7 +62,7 @@ void QueryDialog::onSendQuery()
     }
     else
     {
-        ui->ResponseLabel->setText(LableText+tr("Affected: %1 row(s)").arg(QString::number(Model->rowCount())));
+        ui->ResponseLabel->setText(LableText+tr("Affected: %n row(s)", nullptr, Model->rowCount()));
         if(Model->rowCount())
             ui->View->show();
 
