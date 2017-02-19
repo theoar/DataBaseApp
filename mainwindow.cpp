@@ -1,7 +1,126 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
-const QList<MainWindow::RELATIONAL> MainWindow::Relationals =
+//const QList<MainWindow::RELATIONAL> MainWindow::Relationals =
+//{
+//    {
+//        "produkty",
+//        tr("Products"),
+//        false, true,
+//        {
+//            { 1, QSqlRelation("kategorie", "IDKategorii", "Kategoria") }
+//        },
+//        {
+//            0
+//        },
+//        {
+//            tr("ID"),
+//            tr("Category"),
+//            tr("Name"),
+//            tr("Price"),
+//            tr("Count"),
+//            tr("Capacity")
+//        }
+//    },
+//    {
+//        "klienci",
+//        tr("Clients"),
+//        false, true,
+//        {},
+//        {
+//            0
+//        },
+//        {
+//            tr("ID"),
+//            tr("Name"),
+//            tr("Phone"),
+//            tr("Mail"),
+//            tr("City"),
+//            tr("Street"),
+//            tr("Home number")
+//        }
+//    },
+
+//    {
+//        "pozycja",
+//        tr("Order products"),
+//        true, false,
+//        {
+//            { 2, QSqlRelation("produkty", "IDProduktu", "NazwaProduktu") }
+//        },
+//        {
+//            0, 1
+//        },
+//        {
+//            tr("ID Position"),
+//            tr("ID Order"),
+//            tr("Product Name"),
+//            tr("Count"),
+//            tr("Cost"),
+//            tr("ID Product"),
+//            tr("ID Category"),
+//            tr("Product's name"),
+//            tr("Price/one"),
+//            tr("Magazin state"),
+//            tr("Capacity")
+//        }
+//    },
+
+//    {
+//        "kategorie",
+//        tr("Categories"),
+//        false, true,
+//        {
+//            { 0, QSqlRelation() }
+//        },
+//        {
+//            0
+//        },
+//        {
+//            tr("IDKategorii"),
+//            tr("Category")
+//        }
+//    },
+
+//    {
+//        "rabaty",
+//        tr("Discounts"),
+//        true, false,
+//        {
+//            { 0, QSqlRelation() }
+//        },
+//        {
+//            0
+//        },
+//        {
+//            tr("ID Dictount"),
+//            tr("Discount [%]"),
+//            tr("Minimal order amount [zł]")
+//        }
+//    },
+
+//    {
+//        "wysylka",
+//        tr("Shipment"),
+//        true, false,
+//        {
+//            { 0, QSqlRelation() }
+//        },
+//        {
+//            0
+//        },
+//        {
+//            tr("ID Shipment"),
+//            tr("Shipment option")
+//        }
+//    }
+
+//};
+
+MainWindow::MainWindow(QWidget *parent) :
+    QMainWindow(parent),
+    ui(new Ui::MainWindow),
+    Relationals(
 {
     {
         "produkty",
@@ -115,11 +234,7 @@ const QList<MainWindow::RELATIONAL> MainWindow::Relationals =
         }
     }
 
-};
-
-MainWindow::MainWindow(QWidget *parent) :
-    QMainWindow(parent),
-    ui(new Ui::MainWindow)
+})
 {
     ui->setupUi(this);
 

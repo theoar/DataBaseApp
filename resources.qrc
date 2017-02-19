@@ -13,5 +13,9 @@
         <file>system-shutdown.png</file>
         <file>document-print.png</file>
         <file>print.html</file>
+        <file>wine.png</file>
+    </qresource>
+    <qresource prefix="/new/prefix2">
+        <file alias="translation_pl">hurtownia1_pl.qm</file>
     </qresource>
 </RCC>

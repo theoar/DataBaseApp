@@ -65,7 +65,7 @@ public:
 
 public:
 
-    static const QList<RELATIONAL> Relationals;
+    const QList<RELATIONAL> Relationals;
 
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();

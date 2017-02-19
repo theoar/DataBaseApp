@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE TS>
-<TS version="2.1" language="pl_PL">
+<TS version="2.0" language="pl_PL">
 <context>
     <name>CategoryDialog</name>
     <message>
@@ -89,7 +89,7 @@
     </message>
     <message>
         <source>Password</source>
-        <translation type="vanished">Hasło:</translation>
+        <translation>Hasło:</translation>
     </message>
     <message>
         <location filename="logindialog.ui" line="41"/>
@@ -98,7 +98,7 @@
     </message>
     <message>
         <source>Server</source>
-        <translation type="vanished">Serwer:</translation>
+        <translation>Serwer:</translation>
     </message>
     <message>
         <location filename="logindialog.ui" line="78"/>
@@ -513,10 +513,10 @@
     <message numerus="yes">
         <location filename="querydialog.cpp" line="65"/>
         <source>Affected: %n row(s)</source>
-        <translation type="unfinished">
-            <numerusform></numerusform>
-            <numerusform></numerusform>
-            <numerusform></numerusform>
+        <translation>
+            <numerusform>Zmodyfikowano: %n wiersz</numerusform>
+            <numerusform>Zmodyfikowano: %n wiersze</numerusform>
+            <numerusform>Zmodyfikowano: %n wierszy</numerusform>
         </translation>
     </message>
 </context>
