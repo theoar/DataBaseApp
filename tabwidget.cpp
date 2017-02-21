@@ -221,8 +221,8 @@ void TabWidget::onDeleteButton()
 }
 
 void TabWidget::onDialogAccepted(QMap<QString, QVariant> Vect)
-{
-	if (auto M = dynamic_cast<QSqlTableModel*>(Model))
+{    
+    if (QSqlTableModel* M = dynamic_cast<QSqlTableModel*>(Model))
 	{
 		QSqlRecord Record;
 
@@ -230,9 +230,13 @@ void TabWidget::onDialogAccepted(QMap<QString, QVariant> Vect)
 		{
 			Record.append(QSqlField(i.key(), i.value().type()));
 			Record.setValue(i.key(), i.value());
-		}
+        }
 
-		M->insertRecord(-1, Record);
+        if(!M->insertRecord(-1, Record))
+            QMessageBox::critical(this, tr("Error"), tr("Can not insert row"));
+        else
+            QMessageBox::information(this, tr("Information"), tr("Row inserted"));
+        M->select();
 	}
 }
 
