@@ -292,6 +292,22 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>MainTab</sender>
+   <signal>currentChanged(int)</signal>
+   <receiver>MainWindow</receiver>
+   <slot>onTabChanged(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>837</x>
+     <y>415</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>944</x>
+     <y>409</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>onActionLogin()</slot>
@@ -299,5 +315,6 @@
   <slot>onQueryAction()</slot>
   <slot>onActionLogout()</slot>
   <slot>onActionPrint()</slot>
+  <slot>onTabChanged(int)</slot>
  </slots>
 </ui>

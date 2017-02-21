@@ -861,6 +861,18 @@ void MainWindow::onActionPrint()
     return;
 }
 
+void MainWindow::onTabChanged(int Index)
+{
+    TabWidget *Tab;
+    Tab = dynamic_cast<TabWidget*>(ui->MainTab->widget(Index));
+    if(Tab)
+    {
+        QSqlTableModel *Model = dynamic_cast<QSqlTableModel*>(Tab->getModel());
+        if(Model)
+            Model->select();
+    }
+}
+
 
 QSqlTableModel* MainWindow::createPozycjaModel()
 {

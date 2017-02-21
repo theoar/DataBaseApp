@@ -233,7 +233,7 @@ void TabWidget::onDialogAccepted(QMap<QString, QVariant> Vect)
         }
 
         if(!M->insertRecord(-1, Record))
-            QMessageBox::critical(this, tr("Error"), tr("Can not insert row"));
+            QMessageBox::critical(this, tr("Error"), tr("Can not insert row. Reason: %1").arg(M->lastError().text()));
         else
             QMessageBox::information(this, tr("Information"), tr("Row inserted"));
         M->select();

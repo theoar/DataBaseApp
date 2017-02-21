@@ -12,7 +12,7 @@
 #include <QTableView>
 #include <QSqlQuery>
 #include <QPushButton>
-
+#include <QSqlError>
 #include "basedialog.h"
 
 namespace Ui

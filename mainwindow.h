@@ -114,7 +114,9 @@ private slots:
     void onActionLogout(void);
     void onActionCheckCount(void);
     void onQueryAction(void);
-    void onActionPrint(void);    
+    void onActionPrint(void);
+
+    void onTabChanged(int Index);
 
 signals:
 
